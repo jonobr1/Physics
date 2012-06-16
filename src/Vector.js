@@ -7,6 +7,7 @@
  */
 
 define([
+  'underscore'
 ], function() {
 
   /**
