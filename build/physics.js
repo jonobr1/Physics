@@ -17,8 +17,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @namespace */
-var physics = physics || {};
+(function() {
+
+var root = this, previousShortcut = root.Physics;
 
 common = (function () {
 
@@ -34,6 +35,8 @@ common = (function () {
   var hasOwnProperty = Object.prototype.hasOwnProperty;
   var slice = ArrayProto.slice;
   var nativeForEach = ArrayProto.forEach;
+  var nativeIndexOf      = ArrayProto.indexOf;
+  var nativeLastIndexOf  = ArrayProto.lastIndexOf;
 
   var has = function(obj, key) {
     return hasOwnProperty.call(obj, key);
@@ -67,10 +70,22 @@ common = (function () {
     extend: function(obj) {
       each(slice.call(arguments, 1), function(source) {
         for (var prop in source) {
-          obj[prop] = source;
+          obj[prop] = source[prop];
         }
       });
       return obj;
+    },
+
+    indexOf: function(array, item, isSorted) {
+      if (array == null) return -1;
+      var i, l;
+      if (isSorted) {
+        i = _.sortedIndex(array, item);
+        return array[i] === item ? i : -1;
+      }
+      if (nativeIndexOf && array.indexOf === nativeIndexOf) return array.indexOf(item);
+      for (i = 0, l = array.length; i < l; i++) if (i in array && array[i] === item) return i;
+      return -1;
     },
 
     isNumber: function(obj) {
@@ -86,26 +101,170 @@ common = (function () {
 })();
 
 
-physics.System = System = (function (Traer, raf, _) {
+Vector = (function (_) {
+
+  /**
+   * A two dimensional vector.
+   */
+  var Vector = function(x, y) {
+
+    this.x = x || 0;
+    this.y = y || 0;
+
+  };
+
+  _.extend(Vector.prototype, {
+
+    set: function(x, y) {
+      this.x = x;
+      this.y = y;
+      return this;
+    },
+
+    copy: function(v) {
+      this.x = v.x;
+      this.y = v.y;
+      return this;
+    },
+
+    clear: function() {
+      this.x = 0;
+      this.y = 0;
+      return this;
+    },
+
+    clone: function() {
+      return new Vector(this.x, this.y);
+    },
+
+    add: function(v1, v2) {
+      this.x = v1.x + v2.x;
+      this.y = v1.y + v2.y;
+      return this;
+    },
+
+    addSelf: function(v) {
+      this.x += v.x;
+      this.y += v.y;
+      return this;
+    },
+
+    sub: function(v1, v2) {
+      this.x = v1.x - v2.x;
+      this.y = v1.y - v2.y;
+      return this;
+    },
+
+    subSelf: function(v) {
+      this.x -= v.x;
+      this.y -= v.y;
+      return this;
+    },
+
+    multiplySelf: function(v) {
+      this.x *= v.x;
+      this.y *= v.y;
+      return this;
+    },
+
+    multiplyScalar: function(s) {
+      this.x *= s;
+      this.y *= s;
+      return this;
+    },
+
+    divideScalar: function(s) {
+      if (s) {
+        this.x /= s;
+        this.y /= s;
+      } else {
+        this.set(0, 0);
+      }
+      return this;
+    },
+
+    negate: function() {
+      return this.multiplyScalar(-1);
+    },
+
+    dot: function(v) {
+      return this.x * v.x + this.y * v.y;
+    },
+
+    lengthSq: function() {
+      return this.x * this.x + this.y * this.y;
+    },
+
+    length: function() {
+      return Math.sqrt(this.lengthSq());
+    },
+
+    normalize: function() {
+      return this.divideScalar(this.length());
+    },
+
+    distanceTo: function(v) {
+      return Math.sqrt(this.distanceToSquared(v));
+    },
+
+    distanceToSquared: function(v) {
+      var dx = this.x - v.x, dy = this.y - v.y;
+      return dx * dx + dy * dy;
+    },
+
+    setLength: function(l) {
+      return this.normalize().multiplyScalar(l);
+    },
+
+    equals: function(v) {
+      return this.distanceTo(v) < 0.0001 /* almost same position */;
+    },
+
+    lerp: function(v, t) {
+      var x = (v.x - this.x) * t + this.x;
+      var y = (v.y - this.y) * t + this.y;
+      return this.set(x, y);
+    },
+
+    isZero: function() {
+      return ( this.lengthSq() < 0.0001 /* almost zero */ );
+    }
+
+  });
+
+  return Vector;
+
+})(common);
+
+
+root.Physics = Physics = (function (ParticleSystem, raf, _) {
+
+  var updates = [];
 
   /**
    * Extended singleton instance of Traer Physics with convenience methods for
    * Request Animation Frame.
    * @class
    */
-  var System = function() {
+  var Physics = function() {
 
     var _this = this;
 
-    Traer.ParticleSystem.apply(this, arguments);
+    ParticleSystem.apply(this, arguments);
 
     this.animations = [];
 
+    update.call(this);
+
   };
 
-  System.Traer = Traer;
+  _.extend(Physics, ParticleSystem, {
 
-  _.extend(System.prototype, Traer.ParticleSystem.prototype, {
+    superclass: ParticleSystem
+
+  });
+
+  _.extend(Physics.prototype, ParticleSystem.prototype, {
 
     /**
      * Call update after values in the system have changed and this will fire
@@ -129,8 +288,6 @@ physics.System = System = (function (Traer, raf, _) {
 
     var _this = this;
 
-    console.log(this);
-
     this.tick();
 
     _.each(this.animations, function(a) {
@@ -149,20 +306,9 @@ physics.System = System = (function (Traer, raf, _) {
 
   }
 
-  /**
-   * Module to contain one instance {Sigleton} of the ParticlSystem and methods
-   * of controlling it. Mainly used for optimization purposes.
-   */
+  return Physics;
 
-  var system = new System();
-
-  update.call(system);
-
-  return system;
-
-})(Traer = (function (Vector, _) {
-
-  var Physics = {};
+})(ParticleSystem = (function (Vector, Particle, Spring, Attraction, Integrator, _) {
 
   /**
    * traer.js
@@ -180,7 +326,234 @@ physics.System = System = (function (Traer, raf, _) {
    *
    * @class
    */
-  Physics.Particle = function(mass) {
+
+  /**
+   * The who kit and kaboodle.
+   *
+   * @class
+   */
+  var ParticleSystem = function() {
+
+    this.__equilibrium = false; // are we at equilibrium?
+
+    this.particles = [];
+    this.springs = [];
+    this.attractions = [];
+    this.forces = [];
+    this.integrator = new Integrator(this);
+    this.hasDeadParticles = false;
+
+    var args = arguments.length;
+
+    if (args === 2) {
+      this.gravity = new Vector(0, arguments[0]);
+      this.drag = arguments[1];
+    } else if (args === 3) {
+      this.gravity = new Vector(arguments[0], arguments[1]);
+      this.drag = arguments[3];
+    } else {
+      this.gravity = new Vector(0, ParticleSystem.DEFAULT_GRAVITY);
+      this.drag = ParticleSystem.DEFAULT_DRAG;
+    }
+
+  };
+
+  _.extend(ParticleSystem, {
+
+    DEFAULT_GRAVITY: 0,
+
+    DEFAULT_DRAG: 0.001,
+
+    Attraction: Attraction,
+
+    Integrator: Integrator,
+
+    Particle: Particle,
+
+    Spring: Spring,
+
+    Vector: Vector
+
+  });
+
+  _.extend(ParticleSystem.prototype, {
+
+    /**
+     * Set the gravity of the ParticleSystem.
+     */
+    setGravity: function(x, y) {
+      this.gravity.set(x, y);
+      return this;
+    },
+
+    /**
+     * Update the integrator
+     */
+    tick: function() {
+      this.integrator.step(arguments.length === 0 ? 1 : arguments[0]);
+      this.__equilibrium = !this.needsUpdate();
+      return this;
+    },
+
+    /**
+     * Checks all springs and attractions to see if the contained particles are
+     * inert / resting and returns a boolean.
+     */
+    needsUpdate: function() {
+
+      needsUpdate = false;
+
+      for (var i = 0, l = this.springs.length; i < l; i++) {
+        if (!this.springs[i].resting()) {
+          needsUpdate = true;
+          break;
+        }
+      }
+
+      if (!needsUpdate) {
+        for (var i = 0, l = this.attractions.length; i < l; i++) {
+          if (!this.attractions[i].resting()) {
+            needsUpdate = true;
+            break;
+          }
+        }
+      }
+
+      return needsUpdate;
+
+    },
+
+    /**
+     * Add a particle to the ParticleSystem.
+     */
+    addParticle: function(p) {
+
+      this.particles.push(p);
+      return this;
+
+    },
+
+    /**
+     * Add a spring to the ParticleSystem.
+     */
+    addSpring: function(s) {
+
+      this.springs.push(s);
+      return this;
+
+    },
+
+    /**
+     * Add an attraction to the ParticleSystem.
+     */
+    addAttraction: function(a) {
+
+      this.attractions.push(a);
+      return this;
+
+    },
+
+    /**
+     * Makes and then adds Particle to ParticleSystem.
+     */
+    makeParticle: function(m, x, y) {
+
+      var mass = _.isNumber(m) ? m : 1.0;
+      var x = x || 0;
+      var y = y || 0;
+
+      var p = new Particle(mass);
+      p.position.set(x, y);
+      this.addParticle(p);
+      return p;
+
+    },
+
+    /**
+     * Makes and then adds Spring to ParticleSystem.
+     */
+    makeSpring: function(a, b, k, d, l) {
+
+      var s = new Spring(a, b, k, d, l);
+      this.addSpring(s);
+      return s;
+
+    },
+
+    /**
+     * Makes and then adds Attraction to ParticleSystem.
+     */
+    makeAttraction: function(a, b, k, d) {
+
+      var a = new Attraction(a, b, k, d);
+      this.addAttraction(a);
+      return a;
+
+    },
+
+    /**
+     * Wipe the ParticleSystem clean.
+     */
+    clear: function() {
+
+      this.particles.length = 0;
+      this.springs.length = 0;
+      this.attractions.length = 0;
+
+    },
+
+    /**
+     * Calculate and apply forces.
+     */
+    applyForces: function() {
+
+      if (!this.gravity.isZero()) {
+        _.each(this.particles, function(p) {
+          p.force.addSelf(this.gravity);
+        }, this);
+      }
+
+      var t = new Vector();
+
+      _.each(this.particles, function(p) {
+        t.set(p.velocity.x * -1 * this.drag, p.velocity.y * -1 * this.drag);
+        p.force.addSelf(t);
+      }, this);
+
+      _.each(this.springs, function(s) {
+        s.update();
+      });
+
+      _.each(this.attractions, function(a) {
+        a.update();
+      });
+
+      _.each(this.forces, function(f) {
+        f.update();
+      });
+
+      return this;
+
+    },
+
+    /**
+     * Clear all particles in the system.
+     */
+    clearForces: function() {
+      _.each(this.particles, function(p) {
+        p.clear();
+      });
+      return this;
+    }
+
+  });
+
+  return ParticleSystem;
+
+})(Vector,
+Particle = (function (Vector, _) {
+
+  var Particle = function(mass) {
 
     this.position = new Vector();
     this.velocity = new Vector();
@@ -192,7 +565,7 @@ physics.System = System = (function (Traer, raf, _) {
 
   };
 
-  _.extend(Physics.Particle.prototype, {
+  _.extend(Particle.prototype, {
 
     /**
      * Get the distance between two particles.
@@ -232,10 +605,13 @@ physics.System = System = (function (Traer, raf, _) {
 
   });
 
-  /**
-   * @class
-   */
-  Physics.Spring = function(a, b, k, d, l) {
+  return Particle;
+
+})(Vector,
+common),
+Spring = (function (Vector, _) {
+
+  var Spring = function(a, b, k, d, l) {
 
     this.constant = k;
     this.damping = d;
@@ -246,7 +622,7 @@ physics.System = System = (function (Traer, raf, _) {
 
   };
 
-  _.extend(Physics.Spring.prototype, {
+  _.extend(Spring.prototype, {
 
     /**
      * Returns the distance between particle a and particle b
@@ -316,10 +692,13 @@ physics.System = System = (function (Traer, raf, _) {
 
   });
 
-  /**
-   * @class
-   */
-  Physics.Attraction = function(a, b, k, d) {
+  return Spring;
+
+})(Vector,
+common),
+Attraction = (function (Vector, _) {
+
+  var Attraction = function(a, b, k, d) {
 
     this.a = a;
     this.b = b;
@@ -330,7 +709,7 @@ physics.System = System = (function (Traer, raf, _) {
 
   };
 
-  _.extend(Physics.Attraction.prototype, {
+  _.extend(Attraction.prototype, {
 
     update: function() {
 
@@ -388,221 +767,19 @@ physics.System = System = (function (Traer, raf, _) {
 
   });
 
-  /**
-   * The who kit and kaboodle.
-   *
-   * @class
-   */
-  Physics.ParticleSystem = function() {
+  return Attraction;
 
-    this.__equilibrium = false; // are we at equilibrium?
-
-    this.particles = [];
-    this.springs = [];
-    this.attractions = [];
-    this.forces = [];
-    this.integrator = new RungeKuttaIntegrator(this);
-    this.hasDeadParticles = false;
-
-    var args = arguments.length;
-
-    if (args === 2) {
-      this.gravity = new Vector(0, arguments[0]);
-      this.drag = arguments[1];
-    } else if (args === 3) {
-      this.gravity = new Vector(arguments[0], arguments[1]);
-      this.drag = arguments[3];
-    } else {
-      this.gravity = new Vector(0, Physics.ParticleSystem.DEFAULT_GRAVITY);
-      this.drag = Physics.ParticleSystem.DEFAULT_DRAG;
-    }
-
-  };
-
-  _.extend(Physics.ParticleSystem, {
-
-    DEFAULT_GRAVITY: 0,
-
-    DEFAULT_DRAG: 0.001
-
-  });
-
-  _.extend(Physics.ParticleSystem.prototype, {
-
-    /**
-     * Set the gravity of the System.
-     */
-    setGravity: function(x, y) {
-      this.gravity.set(x, y);
-      return this;
-    },
-
-    /**
-     * Update the integrator
-     */
-    tick: function() {
-      this.integrator.step(arguments.length === 0 ? 1 : arguments[0]);
-      this.__equilibrium = !this.needsUpdate();
-      return this;
-    },
-
-    /**
-     * Checks all springs and attractions to see if the contained particles are
-     * inert / resting and returns a boolean.
-     */
-    needsUpdate: function() {
-
-      needsUpdate = false;
-
-      for (var i = 0, l = this.springs.length; i < l; i++) {
-        if (!this.springs[i].resting()) {
-          needsUpdate = true;
-          break;
-        }
-      }
-
-      if (!needsUpdate) {
-        for (var i = 0, l = this.attractions.length; i < l; i++) {
-          if (!this.attractions[i].resting()) {
-            needsUpdate = true;
-            break;
-          }
-        }
-      }
-
-      return needsUpdate;
-
-    },
-
-    /**
-     * Add a particle to the System.
-     */
-    addParticle: function(p) {
-
-      this.particles.push(p);
-      return this;
-
-    },
-
-    /**
-     * Add a spring to the System.
-     */
-    addSpring: function(s) {
-
-      this.springs.push(s);
-      return this;
-
-    },
-
-    /**
-     * Add an attraction to the System.
-     */
-    addAttraction: function(a) {
-
-      this.attractions.push(a);
-      return this;
-
-    },
-
-    /**
-     * Makes and then adds Particle to System.
-     */
-    makeParticle: function(m, x, y) {
-
-      var mass = _.isNumber(m) ? m : 1.0;
-      var x = x || 0;
-      var y = y || 0;
-
-      var p = new Physics.Particle(mass);
-      p.position.set(x, y);
-      this.addParticle(p);
-      return p;
-
-    },
-
-    /**
-     * Makes and then adds Spring to System.
-     */
-    makeSpring: function(a, b, k, d, l) {
-
-      var s = new Physics.Spring(a, b, k, d, l);
-      this.addSpring(s);
-      return s;
-
-    },
-
-    /**
-     * Makes and then adds Attraction to System.
-     */
-    makeAttraction: function(a, b, k, d) {
-
-      var a = new Physics.Attraction(a, b, k, d);
-      this.addAttraction(a);
-      return a;
-
-    },
-
-    /**
-     * Wipe the System clean.
-     */
-    clear: function() {
-
-      this.particles.length = 0;
-      this.springs.length = 0;
-      this.attractions.length = 0;
-
-    },
-
-    /**
-     * Calculate and apply forces.
-     */
-    applyForces: function() {
-
-      if (!this.gravity.isZero()) {
-        _.each(this.particles, function(p) {
-          p.force.addSelf(this.gravity);
-        }, this);
-      }
-
-      var t = new Vector();
-
-      _.each(this.particles, function(p) {
-        t.set(p.velocity.x * -1 * this.drag, p.velocity.y * -1 * this.drag);
-        p.force.addSelf(t);
-      }, this);
-
-      _.each(this.springs, function(s) {
-        s.update();
-      });
-
-      _.each(this.attractions, function(a) {
-        a.update();
-      });
-
-      _.each(this.forces, function(f) {
-        f.update();
-      });
-
-      return this;
-
-    },
-
-    /**
-     * Clear all particles in the system.
-     */
-    clearForces: function() {
-      _.each(this.particles, function(p) {
-        p.clear();
-      });
-      return this;
-    }
-
-  });
+})(Vector,
+common),
+Integrator = (function (Vector, _) {
 
   /**
+   * Runge Kutta Integrator
+   * http://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
+   * 
    * @class
    */
-  function RungeKuttaIntegrator(s) {
+  var Integrator = function(s) {
     this.s = s;
     this.originalPositions = [];
     this.originalVelocities = [];
@@ -614,9 +791,9 @@ physics.System = System = (function (Traer, raf, _) {
     this.k3Velocities = [];
     this.k4Forces = [];
     this.k4Velocities = [];
-  }
+  };
 
-  _.extend(RungeKuttaIntegrator.prototype, {
+  _.extend(Integrator.prototype, {
 
     allocateParticles: function() {
 
@@ -783,142 +960,10 @@ physics.System = System = (function (Traer, raf, _) {
 
   });
 
-  return Physics;
+  return Integrator;
 
-})(Vector = (function (_) {
-
-  /**
-   * A two dimensional vector.
-   */
-  var Vector = function(x, y) {
-
-    this.x = x || 0;
-    this.y = y || 0;
-
-  };
-
-  _.extend(Vector.prototype, {
-
-    set: function(x, y) {
-      this.x = x;
-      this.y = y;
-      return this;
-    },
-
-    copy: function(v) {
-      this.x = v.x;
-      this.y = v.y;
-      return this;
-    },
-
-    clear: function() {
-      this.x = 0;
-      this.y = 0;
-      return this;
-    },
-
-    clone: function() {
-      return new Vector(this.x, this.y);
-    },
-
-    add: function(v1, v2) {
-      this.x = v1.x + v2.x;
-      this.y = v1.y + v2.y;
-      return this;
-    },
-
-    addSelf: function(v) {
-      this.x += v.x;
-      this.y += v.y;
-      return this;
-    },
-
-    sub: function(v1, v2) {
-      this.x = v1.x - v2.x;
-      this.y = v1.y - v2.y;
-      return this;
-    },
-
-    subSelf: function(v) {
-      this.x -= v.x;
-      this.y -= v.y;
-      return this;
-    },
-
-    multiplySelf: function(v) {
-      this.x *= v.x;
-      this.y *= v.y;
-      return this;
-    },
-
-    multiplyScalar: function(s) {
-      this.x *= s;
-      this.y *= s;
-      return this;
-    },
-
-    divideScalar: function(s) {
-      if (s) {
-        this.x /= s;
-        this.y /= s;
-      } else {
-        this.set(0, 0);
-      }
-      return this;
-    },
-
-    negate: function() {
-      return this.multiplyScalar(-1);
-    },
-
-    dot: function(v) {
-      return this.x * v.x + this.y * v.y;
-    },
-
-    lengthSq: function() {
-      return this.x * this.x + this.y * this.y;
-    },
-
-    length: function() {
-      return Math.sqrt(this.lengthSq());
-    },
-
-    normalize: function() {
-      return this.divideScalar(this.length());
-    },
-
-    distanceTo: function(v) {
-      return Math.sqrt(this.distanceToSquared(v));
-    },
-
-    distanceToSquared: function(v) {
-      var dx = this.x - v.x, dy = this.y - v.y;
-      return dx * dx + dy * dy;
-    },
-
-    setLength: function(l) {
-      return this.normalize().multiplyScalar(l);
-    },
-
-    equals: function(v) {
-      return this.distanceTo(v) < 0.0001 /* almost same position */;
-    },
-
-    lerp: function(v, t) {
-      var x = (v.x - this.x) * t + this.x;
-      var y = (v.y - this.y) * t + this.y;
-      return this.set(x, y);
-    },
-
-    isZero: function() {
-      return ( this.lengthSq() < 0.0001 /* almost zero */ );
-    }
-
-  });
-
-  return Vector;
-
-})(common),
+})(Vector,
+common),
 common),
 requestAnimationFrame = (function () {
 
@@ -937,3 +982,5 @@ requestAnimationFrame = (function () {
           };
 })(),
 common);
+
+});

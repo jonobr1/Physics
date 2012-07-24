@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head></head>
+  <body>
+    <script type="text/javascript" src="../third-party/require.js"></script>
+    <script type="text/javascript">
+
+      require({
+        baseUrl: '../src'
+      });
+
+      require([
+        'Physics'
+      ], function(Physics) {
+
+        console.log(new Physics());
+
+      });
+
+    </script>
+  </body>
+</html>

@@ -13,6 +13,8 @@ define([
   var hasOwnProperty = Object.prototype.hasOwnProperty;
   var slice = ArrayProto.slice;
   var nativeForEach = ArrayProto.forEach;
+  var nativeIndexOf      = ArrayProto.indexOf;
+  var nativeLastIndexOf  = ArrayProto.lastIndexOf;
 
   var has = function(obj, key) {
     return hasOwnProperty.call(obj, key);
@@ -46,10 +48,22 @@ define([
     extend: function(obj) {
       each(slice.call(arguments, 1), function(source) {
         for (var prop in source) {
-          obj[prop] = source;
+          obj[prop] = source[prop];
         }
       });
       return obj;
+    },
+
+    indexOf: function(array, item, isSorted) {
+      if (array == null) return -1;
+      var i, l;
+      if (isSorted) {
+        i = _.sortedIndex(array, item);
+        return array[i] === item ? i : -1;
+      }
+      if (nativeIndexOf && array.indexOf === nativeIndexOf) return array.indexOf(item);
+      for (i = 0, l = array.length; i < l; i++) if (i in array && array[i] === item) return i;
+      return -1;
     },
 
     isNumber: function(obj) {
