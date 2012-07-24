@@ -30,6 +30,10 @@
         strength: 0.2,
         damping: 0.1
       };
+      var selection = {
+        radius: 1.0,
+        max: canvas.height / 12
+      };
       var shadow = {
         min: null,
         max: null
@@ -216,10 +220,24 @@
         // Highlight the current particle
 
         if (current_particle) {
-          ctx.fillStyle = 'rgba(255, 192, 0, 0.5)';
+
+          // Animate the selection using an easing algo.
+
+          if (selection.radius < selection.max - 1) {
+            var delta = Math.abs(selection.radius - selection.max);
+            selection.radius += delta * 0.125;
+          } else {
+            selection.radius = 1;
+          }
+
+          // style the selection
+
+          ctx.strokeStyle = 'rgba(255, 192, 0, 0.75)';
+          ctx.lineWidth = 5;
           ctx.beginPath();
-          ctx.arc(mouse.x, mouse.y, canvas.height / 12, 0, Math.PI * 2.0, false);
-          ctx.fill();
+          ctx.arc(mouse.x, mouse.y, selection.radius, 0, Math.PI * 2.0, false);
+          ctx.stroke();
+
         }
 
         // Draw a shadow underneath the cloth.
