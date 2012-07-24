@@ -38,6 +38,7 @@
         min: null,
         max: null
       };
+      var ground = canvas.height - 25;
 
       // Make a 2D Array to hold all the particles in a grid formation.
 
@@ -166,6 +167,35 @@
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        // Draw a shadow underneath the cloth.
+
+        for (var i = 0, l = corners.length; i < l; i++) {
+
+          // Calculate the range that the shadow should cast.
+
+          var corner = corners[i];
+          var position = corner.position;
+
+          if (!shadow.min || shadow.min > position.x) {
+            shadow.min = position.x;
+          }
+
+          if (!shadow.max || shadow.max < position.x) {
+            shadow.max = position.x;
+          }
+
+        }
+
+        shadow.width = shadow.max - shadow.min;
+
+        // Draw the shadow
+
+        ctx.fillStyle = 'rgba(0,0,0,0.125)';
+        drawEllipse(ctx, shadow.min, ground - 25, shadow.width, 25);
+        ctx.fill();
+
+        shadow.min = shadow.max = shadow.width = null;
+
         // Fill the surface of the grid.
 
         ctx.fillStyle = '#f00';
@@ -239,35 +269,6 @@
           ctx.stroke();
 
         }
-
-        // Draw a shadow underneath the cloth.
-
-        for (var i = 0, l = corners.length; i < l; i++) {
-
-          // Calculate the range that the shadow should cast.
-
-          var corner = corners[i];
-          var position = corner.position;
-
-          if (!shadow.min || shadow.min > position.x) {
-            shadow.min = position.x;
-          }
-
-          if (!shadow.max || shadow.max < position.x) {
-            shadow.max = position.x;
-          }
-
-        }
-
-        shadow.width = shadow.max - shadow.min;
-
-        // Draw the shadow
-
-        ctx.fillStyle = 'rgba(0,0,0,0.125)';
-        drawEllipse(ctx, shadow.min, canvas.height - 50, shadow.width, 20);
-        ctx.fill();
-
-        shadow.min = shadow.max = shadow.width = null;
 
       }
 
