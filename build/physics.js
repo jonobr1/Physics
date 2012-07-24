@@ -36,7 +36,6 @@ common = (function () {
   var slice = ArrayProto.slice;
   var nativeForEach = ArrayProto.forEach;
   var nativeIndexOf      = ArrayProto.indexOf;
-  var nativeLastIndexOf  = ArrayProto.lastIndexOf;
 
   var has = function(obj, key) {
     return hasOwnProperty.call(obj, key);
@@ -61,6 +60,20 @@ common = (function () {
 
   };
 
+  var identity = function(value) {
+    return value;
+  };
+
+  var sortedIndex = function(array, obj, iterator) {
+    iterator || (iterator = identity);
+    var low = 0, high = array.length;
+    while (low < high) {
+      var mid = (low + high) >> 1;
+      iterator(array[mid]) < iterator(obj) ? low = mid + 1 : high = mid;
+    }
+    return low;
+  };
+
   return {
 
     has: has,
@@ -80,7 +93,7 @@ common = (function () {
       if (array == null) return -1;
       var i, l;
       if (isSorted) {
-        i = _.sortedIndex(array, item);
+        i = sortedIndex(array, item);
         return array[i] === item ? i : -1;
       }
       if (nativeIndexOf && array.indexOf === nativeIndexOf) return array.indexOf(item);
@@ -88,12 +101,24 @@ common = (function () {
       return -1;
     },
 
+    sortedIndex: sortedIndex,
+
+    identity: identity,
+
     isNumber: function(obj) {
       return toString.call(obj) == '[object Number]';
     },
 
     isFunction: function(obj) {
-      return toString.call(obj) == '[object Function]';
+      return toString.call(obj) == '[object Function]' || typeof obj == 'function';
+    },
+
+    isUndefined: function(obj) {
+      return obj === void 0;
+    },
+
+    isNull: function(obj) {
+      return obj === null;
     }
 
   }
@@ -266,6 +291,18 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
   _.extend(Physics.prototype, ParticleSystem.prototype, {
 
+    onUpdate: function(func) {
+
+      if (_.indexOf(this.animations, func) >= 0 || !_.isFunction(func)) {
+        return this;
+      }
+
+      this.animations.push(func);
+
+      return this;
+
+    },
+
     /**
      * Call update after values in the system have changed and this will fire
      * it's own Request Animation Frame to update until things have settled
@@ -291,9 +328,7 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
     this.tick();
 
     _.each(this.animations, function(a) {
-      if (_.isFunction(a.update)) {
-        a.update();
-      }
+      a();
     });
 
     if (!this.__equilibrium) {

@@ -10,10 +10,130 @@
     <script type="text/javascript" src="../build/Physics.js"></script>
     <script type="text/javascript">
 
+      var grid_size = 10;
+
       var canvas = document.getElementById('canvas-field');
       var ctx = canvas.getContext('2d');
+      var mouse = new Physics.Vector(null, null);
 
       var physics = new Physics();
+      var current_particle;
+      var particles = [];
+
+      var gridStepX = (canvas.width / 2) / grid_size;
+      var gridStepY = (canvas.height / 2) / grid_size;
+      var spring = {
+        strength: 0.2,
+        damping: 0.1
+      };
+
+      // Make a 2D Array
+
+      for (var i = 0; i < grid_size; i++) {
+        particles.push([]);
+      }
+
+      // Make Particles and connecting Springs amongst columns.
+
+      for (var i = 0; i < grid_size; i++) {
+        for (var j = 0; j < grid_size; j++) {
+          var mass = 0.2;
+          var x = j * gridStepX + canvas.width / 4;
+          var y = i * gridStepY + 20;
+          particles[i][j] = physics.makeParticle(mass, x, y);
+          if (j > 0) {
+            var particle_a = particles[i][j - 1];
+            var particle_b = particles[i][j];
+            physics.makeSpring(particle_a, particle_b, spring.strength, spring.damping, gridStepX);
+          }
+        }
+      }
+
+      // Make springs between the rest of the particles particles amongst rows.
+
+      for (var j = 0; j < grid_size; j++) {
+        for (var i = 1; i < grid_size; i++) {
+          var particle_a = particles[i - 1][j];
+          var particle_b = particles[i][j];
+          physics.makeSpring(particle_a, particle_b, spring.strength, spring.damping, gridStepY);
+        }
+      }
+
+
+      // Make the top left and top right particles fixed (not affected by forces).
+
+      particles[0][0].makeFixed();
+      particles[0][grid_size - 1].makeFixed();
+
+      physics.onUpdate(draw).update();
+
+      canvas.addEventListener('mousedown', onCanvasMouseDown, false);
+      canvas.addEventListener('mousemove', onCanvasMouseMove, false);
+      canvas.addEventListener('mouseup', onCanvasMouseUp, false);
+
+      function onCanvasMouseDown(e) {
+
+        current_particle = e.shiftKey ? particles[0][0] : particles[0][grid_size - 1];
+
+        mouse.set(e.clientX, e.clientY);
+        onCanvasMouseMove(e);
+      }
+
+      function onCanvasMouseMove(e) {
+
+        if (mouse.x == null || mouse.y == null || !current_particle) {
+          return;
+        }
+
+        mouse.set(e.clientX, e.clientY);
+        mouse.subSelf({ x: canvas.offsetLeft, y: canvas.offsetTop });
+
+        current_particle.position.copy(mouse);
+        current_particle.velocity.clear();
+      }
+
+      function onCanvasMouseUp(e) {
+
+        mouse.set(null, null);
+        current_particle = undefined;
+
+      }
+
+      function draw() {
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (var i = 0; i < grid_size; i++) {
+
+          ctx.beginPath();
+          ctx.moveTo(particles[i][0].position.x, particles[i][0].position.y);
+          ctx.lineTo(particles[i][0].position.x, particles[i][0].position.y);
+
+          for (var j = 0; j < grid_size; j++) {
+            ctx.lineTo(particles[i][j].position.x, particles[i][j].position.y);
+          }
+
+          ctx.lineTo(particles[i][grid_size - 1].position.x, particles[i][grid_size - 1].position.y);
+          ctx.stroke();
+
+        }
+
+        for (var j = 0; j < grid_size; j++) {
+
+          ctx.beginPath();
+          ctx.moveTo(particles[0][j].position.x, particles[0][j].position.y);
+          ctx.lineTo(particles[0][j].position.x, particles[0][j].position.y);
+
+          for (var i = 0; i < grid_size; i++) {
+            ctx.lineTo(particles[i][j].position.x, particles[i][j].position.y);
+          }
+
+          ctx.lineTo(particles[grid_size - 1][j].position.x, particles[grid_size - 1][j].position.y);
+          ctx.stroke();
+
+        }
+
+      }
 
     </script>
   </body>

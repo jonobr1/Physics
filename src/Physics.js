@@ -31,6 +31,18 @@ define([
 
   _.extend(Physics.prototype, ParticleSystem.prototype, {
 
+    onUpdate: function(func) {
+
+      if (_.indexOf(this.animations, func) >= 0 || !_.isFunction(func)) {
+        return this;
+      }
+
+      this.animations.push(func);
+
+      return this;
+
+    },
+
     /**
      * Call update after values in the system have changed and this will fire
      * it's own Request Animation Frame to update until things have settled
@@ -56,9 +68,7 @@ define([
     this.tick();
 
     _.each(this.animations, function(a) {
-      if (_.isFunction(a.update)) {
-        a.update();
-      }
+      a();
     });
 
     if (!this.__equilibrium) {

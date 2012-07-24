@@ -14,7 +14,6 @@ define([
   var slice = ArrayProto.slice;
   var nativeForEach = ArrayProto.forEach;
   var nativeIndexOf      = ArrayProto.indexOf;
-  var nativeLastIndexOf  = ArrayProto.lastIndexOf;
 
   var has = function(obj, key) {
     return hasOwnProperty.call(obj, key);
@@ -39,6 +38,20 @@ define([
 
   };
 
+  var identity = function(value) {
+    return value;
+  };
+
+  var sortedIndex = function(array, obj, iterator) {
+    iterator || (iterator = identity);
+    var low = 0, high = array.length;
+    while (low < high) {
+      var mid = (low + high) >> 1;
+      iterator(array[mid]) < iterator(obj) ? low = mid + 1 : high = mid;
+    }
+    return low;
+  };
+
   return {
 
     has: has,
@@ -58,7 +71,7 @@ define([
       if (array == null) return -1;
       var i, l;
       if (isSorted) {
-        i = _.sortedIndex(array, item);
+        i = sortedIndex(array, item);
         return array[i] === item ? i : -1;
       }
       if (nativeIndexOf && array.indexOf === nativeIndexOf) return array.indexOf(item);
@@ -66,12 +79,24 @@ define([
       return -1;
     },
 
+    sortedIndex: sortedIndex,
+
+    identity: identity,
+
     isNumber: function(obj) {
       return toString.call(obj) == '[object Number]';
     },
 
     isFunction: function(obj) {
-      return toString.call(obj) == '[object Function]';
+      return toString.call(obj) == '[object Function]' || typeof obj == 'function';
+    },
+
+    isUndefined: function(obj) {
+      return obj === void 0;
+    },
+
+    isNull: function(obj) {
+      return obj === null;
     }
 
   }
