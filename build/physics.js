@@ -1,7 +1,159 @@
-define([
-  'physics/Vector',
-  'common'
-], function(Vector, _) {
+/**
+ * Physics
+ * A requirified port of Traer Physics from Processing to JavaScript.
+ * Copyright (C) 2012 jonobr1
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/** @namespace */
+var physics = physics || {};
+
+common = (function () {
+
+  // Pulled only what's needed from:
+
+  // Underscore.js 1.3.3
+  // (c) 2009-2012 Jeremy Ashkenas, DocumentCloud Inc.
+  // http://documentcloud.github.com/underscore
+
+  var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+  var has = function(obj, key) {
+    return hasOwnProperty.call(obj, key);
+  };
+
+  var each = function(obj, iterator, context) {
+
+    if (obj == null) return;
+        if (nativeForEach && obj.forEach === nativeForEach) {
+          obj.forEach(iterator, context);
+        } else if (obj.length === +obj.length) {
+          for (var i = 0, l = obj.length; i < l; i++) {
+            if (i in obj && iterator.call(context, obj[i], i, obj) === breaker) return;
+          }
+        } else {
+          for (var key in obj) {
+            if (_.has(obj, key)) {
+              if (iterator.call(context, obj[key], key, obj) === breaker) return;
+            }
+          }
+        }
+
+  };
+
+  return {
+
+    has: has,
+
+    each: each,
+
+    extend: function(obj) {
+      each(slice.call(arguments, l), function(source) {
+        for (var prop in source) {
+          obj[prop] = source;
+        }
+      });
+      return obj;
+    },
+
+    isNumber: function(obj) {
+      return toString.call(obj) == '[object Number]';
+    },
+
+    isFunction: function(obj) {
+      return toString.call(obj) == '[object Function]';
+    }
+
+  }
+
+})();
+
+
+physics.System = System = (function (Traer, raf, _) {
+
+  /**
+   * Extended singleton instance of Traer Physics with convenience methods for
+   * Request Animation Frame.
+   * @class
+   */
+  var System = function() {
+
+    var _this = this;
+
+    Traer.ParticleSystem.apply(this, arguments);
+
+    this.animations = [];
+
+  };
+
+  System.Traer = Traer;
+
+  _.extend(System.prototype, Traer.ParticleSystem.prototype, {
+
+    /**
+     * Call update after values in the system have changed and this will fire
+     * it's own Request Animation Frame to update until things have settled
+     * to equilibrium — at which point the system will stop updating.
+     */
+    update: function() {
+
+      if (this.__equilibrium) {
+        this.__equilibrium = false;
+        update.call(this);;
+      }
+
+      return this;
+
+    }
+
+  });
+
+  function update() {
+
+    var _this = this;
+
+    this.tick();
+
+    _.each(this.animations, function(a) {
+      if (_.isFunction(a.update)) {
+        a.update();
+      }
+    });
+
+    if (!this.__equilibrium) {
+
+      raf(function() {
+        update.call(_this);
+      });
+
+    }
+
+  }
+
+  /**
+   * Module to contain one instance {Sigleton} of the ParticlSystem and methods
+   * of controlling it. Mainly used for optimization purposes.
+   */
+
+  var system = new System();
+
+  update.call(system);
+
+  return system;
+
+})(Traer = (function (Vector, _) {
 
   var Physics = {};
 
@@ -626,4 +778,18 @@ define([
 
   return Physics;
 
-});
+})(common),
+requestAnimationFrame = (function () {
+
+  // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+
+  return  window.requestAnimationFrame       ||
+          window.webkitRequestAnimationFrame ||
+          window.mozRequestAnimationFrame    ||
+          window.oRequestAnimationFrame      ||
+          window.msRequestAnimationFrame     ||
+          function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+          };
+})(),
+common);

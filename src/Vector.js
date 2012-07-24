@@ -7,8 +7,8 @@
  */
 
 define([
-  'underscore'
-], function() {
+  'common'
+], function(_) {
 
   /**
    * A two dimensional vector.

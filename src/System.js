@@ -1,14 +1,15 @@
 define([
-  'physics/Traer',
-  'RAF',
-  'underscore'
-], function(Traer, raf) {
+  'Traer',
+  'requestAnimationFrame',
+  'common'
+], function(Traer, raf, _) {
 
   /**
-   * Extended instance of Traer Physics with convenience methods for
+   * Extended singleton instance of Traer Physics with convenience methods for
    * Request Animation Frame.
+   * @class
    */
-  var Physics = function() {
+  var System = function() {
 
     var _this = this;
 
@@ -18,10 +19,15 @@ define([
 
   };
 
-  Physics.Traer = Traer;
+  System.Traer = Traer;
 
-  _.extend(Physics.prototype, Traer.ParticleSystem.prototype, {
+  _.extend(System.prototype, Traer.ParticleSystem.prototype, {
 
+    /**
+     * Call update after values in the system have changed and this will fire
+     * it's own Request Animation Frame to update until things have settled
+     * to equilibrium — at which point the system will stop updating.
+     */
     update: function() {
 
       if (this.__equilibrium) {
@@ -62,10 +68,10 @@ define([
    * of controlling it. Mainly used for optimization purposes.
    */
 
-  var physics = new Physics();
+  var system = new System();
 
-  update.call(physics);
+  update.call(system);
 
-  return physics;
+  return system;
 
 });
