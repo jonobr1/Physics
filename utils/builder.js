@@ -79,7 +79,7 @@ function build(_params) {
   // to_write += 'root.' + params.shortcut + ' = previousShortcut;\n';
   // to_write += 'return this;\n';
   // to_write += '};\n';
-  to_write += '\n\n});'
+  to_write += '\n\n})();'
 
   if (params.verbose) console.log('Exported: ' + params.main + ' to window.' + params.shortcut);
 

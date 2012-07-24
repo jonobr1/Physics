@@ -242,7 +242,7 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
   var updates = [];
 
   /**
-   * Extended singleton instance of Traer Physics with convenience methods for
+   * Extended singleton instance of ParticleSystem with convenience methods for
    * Request Animation Frame.
    * @class
    */
@@ -983,4 +983,4 @@ requestAnimationFrame = (function () {
 })(),
 common);
 
-});
+})();

@@ -11,6 +11,6 @@ var params = {
 require('./builder.js').build(params);
 
 params.minify = true;
-params.out = '../build/physics.min.js';
+params.out = '../build/Physics.min.js';
 
 require('./builder.js').build(params);
