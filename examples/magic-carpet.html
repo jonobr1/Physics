@@ -1,16 +1,16 @@
 <!doctype html>
 <html>
   <head>
-    <title>Physics: Cloth</title>
+    <title>Physics: Magic Carpet</title>
     <link rel="stylesheet" type="text/css" href="../styles/style.css" />
     <meta name="description" content="" />
   </head>
   <body>
-    <canvas id="canvas-field" width="400" height="400"></canvas>
+    <canvas id="canvas-field" width="800" height="600"></canvas>
     <script type="text/javascript" src="../build/Physics.js"></script>
     <script type="text/javascript">
 
-      var grid_size = 10;
+      var grid_size = 20;
       var last_grid = last_grid;
 
       var canvas = document.getElementById('canvas-field');
@@ -29,6 +29,10 @@
       var spring = {
         strength: 0.2,
         damping: 0.1
+      };
+      var shadow = {
+        min: null,
+        max: null
       };
 
       // Make a 2D Array to hold all the particles in a grid formation.
@@ -70,12 +74,12 @@
       corners.push(particles[0][0]);                  // North West
       corners.push(particles[0][last_grid]);          // North East
       corners.push(particles[last_grid][last_grid]);  // South East
-      corners.push(particles[0][last_grid]);          // South West
+      corners.push(particles[last_grid][0]);          // South West
 
       // Make the top-left and top-right particles fixed (not affected by forces).
 
-      particles[0][0].makeFixed();
-      particles[0][last_grid].makeFixed();
+      corners[0].makeFixed();
+      corners[1].makeFixed();
 
       // Add our draw function to Physic's loop and call an update.
 
@@ -84,8 +88,8 @@
       // Add mouse events.
 
       canvas.addEventListener('mousedown', onCanvasMouseDown, false);
-      canvas.addEventListener('mousemove', onCanvasMouseMove, false);
-      canvas.addEventListener('mouseup', onCanvasMouseUp, false);
+      window.addEventListener('mousemove', onCanvasMouseMove, false);
+      window.addEventListener('mouseup', onCanvasMouseUp, false);
 
       function onCanvasMouseDown(e) {
 
@@ -208,6 +212,64 @@
         }
 
         ctx.fill();
+
+        // Highlight the current particle
+
+        if (current_particle) {
+          ctx.fillStyle = 'rgba(255, 192, 0, 0.5)';
+          ctx.beginPath();
+          ctx.arc(mouse.x, mouse.y, canvas.height / 12, 0, Math.PI * 2.0, false);
+          ctx.fill();
+        }
+
+        // Draw a shadow underneath the cloth.
+
+        for (var i = 0, l = corners.length; i < l; i++) {
+
+          // Calculate the range that the shadow should cast.
+
+          var corner = corners[i];
+          var position = corner.position;
+
+          if (!shadow.min || shadow.min > position.x) {
+            shadow.min = position.x;
+          }
+
+          if (!shadow.max || shadow.max < position.x) {
+            shadow.max = position.x;
+          }
+
+        }
+
+        shadow.width = shadow.max - shadow.min;
+
+        // Draw the shadow
+
+        ctx.fillStyle = 'rgba(0,0,0,0.125)';
+        drawEllipse(ctx, shadow.min, canvas.height - 50, shadow.width, 20);
+        ctx.fill();
+
+        shadow.min = shadow.max = shadow.width = null;
+
+      }
+
+      function drawEllipse(ctx, x, y, w, h) {
+
+        var kappa = .5522848;
+            ox = (w / 2) * kappa, // control point offset horizontal
+            oy = (h / 2) * kappa, // control point offset vertical
+            xe = x + w,           // x-end
+            ye = y + h,           // y-end
+            xm = x + w / 2,       // x-middle
+            ym = y + h / 2;       // y-middle
+
+        ctx.beginPath();
+        ctx.moveTo(x, ym);
+        ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+        ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+        ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+        ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+        ctx.closePath();
 
       }
 
