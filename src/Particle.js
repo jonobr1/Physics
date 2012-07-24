@@ -30,6 +30,7 @@ define([
     makeFixed: function() {
       this.fixed = true;
       this.velocity.clear();
+      return this;
     },
 
     /**
@@ -44,6 +45,7 @@ define([
       this.force.clear();
       this.mass = 1.0;
 
+      return this;
     },
 
     /**

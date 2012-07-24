@@ -11,12 +11,16 @@
     <script type="text/javascript">
 
       var grid_size = 10;
+      var last_grid = last_grid;
 
       var canvas = document.getElementById('canvas-field');
       var ctx = canvas.getContext('2d');
       var mouse = new Physics.Vector(null, null);
 
-      var physics = new Physics();
+      var gravity = 0.01, drag = Physics.DEFAULT_DRAG;
+
+      var physics = new Physics(gravity, drag);
+      var corners = [];
       var current_particle;
       var particles = [];
 
@@ -27,7 +31,7 @@
         damping: 0.1
       };
 
-      // Make a 2D Array
+      // Make a 2D Array to hold all the particles in a grid formation.
 
       for (var i = 0; i < grid_size; i++) {
         particles.push([]);
@@ -59,13 +63,25 @@
         }
       }
 
+      last_grid = particles.length - 1;
 
-      // Make the top left and top right particles fixed (not affected by forces).
+      // Select the four corners for convenience
+
+      corners.push(particles[0][0]);                  // North West
+      corners.push(particles[0][last_grid]);          // North East
+      corners.push(particles[last_grid][last_grid]);  // South East
+      corners.push(particles[0][last_grid]);          // South West
+
+      // Make the top-left and top-right particles fixed (not affected by forces).
 
       particles[0][0].makeFixed();
-      particles[0][grid_size - 1].makeFixed();
+      particles[0][last_grid].makeFixed();
+
+      // Add our draw function to Physic's loop and call an update.
 
       physics.onUpdate(draw).update();
+
+      // Add mouse events.
 
       canvas.addEventListener('mousedown', onCanvasMouseDown, false);
       canvas.addEventListener('mousemove', onCanvasMouseMove, false);
@@ -73,27 +89,64 @@
 
       function onCanvasMouseDown(e) {
 
-        current_particle = e.shiftKey ? particles[0][0] : particles[0][grid_size - 1];
+        // Get mouse position within the canvas-space.
 
-        mouse.set(e.clientX, e.clientY);
+        mouse
+          .set(e.clientX, e.clientY)
+          .subSelf({ x: canvas.offsetLeft, y: canvas.offsetTop });
+
+        // Find the particle closest to the mouse position and make that
+        // the particle we will drag.
+
+        var _d;
+
+        for (var i = 0, l = corners.length; i < l; i++) {
+
+          var corner = corners[i];
+          var d = mouse.distanceToSquared(corner.position);
+
+          if (!_d || (_d && d < _d)) {
+            current_particle = corner;
+            _d = d;
+          }
+
+        }
+
+        current_particle.makeFixed();
+
         onCanvasMouseMove(e);
+
       }
 
       function onCanvasMouseMove(e) {
+
+        // Make sure we're dragging.
 
         if (mouse.x == null || mouse.y == null || !current_particle) {
           return;
         }
 
-        mouse.set(e.clientX, e.clientY);
-        mouse.subSelf({ x: canvas.offsetLeft, y: canvas.offsetTop });
+        // Get mouse position within the canvas-space.
+
+        mouse
+          .set(e.clientX, e.clientY)
+          .subSelf({ x: canvas.offsetLeft, y: canvas.offsetTop });
+
+        // Set the current particle's position to the mouse. i.e: stick it to
+        // the mouse.
 
         current_particle.position.copy(mouse);
         current_particle.velocity.clear();
+
       }
 
       function onCanvasMouseUp(e) {
 
+        // Reset variables
+
+        if (current_particle !== corners[0] && current_particle !== corners[1]) {
+          current_particle.fixed = false;
+        }
         mouse.set(null, null);
         current_particle = undefined;
 
@@ -101,37 +154,60 @@
 
       function draw() {
 
+        // Clear the canvas.
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Fill the surface of the grid.
+
+        ctx.fillStyle = '#f00';
+        ctx.beginPath();
+
+        // Top
 
         for (var i = 0; i < grid_size; i++) {
 
-          ctx.beginPath();
-          ctx.moveTo(particles[i][0].position.x, particles[i][0].position.y);
-          ctx.lineTo(particles[i][0].position.x, particles[i][0].position.y);
-
-          for (var j = 0; j < grid_size; j++) {
-            ctx.lineTo(particles[i][j].position.x, particles[i][j].position.y);
+          var particle = particles[0][i];
+          var position = particle.position;
+          if (i === 0) {
+            ctx.moveTo(position.x, position.y);
+          } else {
+            ctx.lineTo(position.x, position.y);
           }
-
-          ctx.lineTo(particles[i][grid_size - 1].position.x, particles[i][grid_size - 1].position.y);
-          ctx.stroke();
 
         }
 
-        for (var j = 0; j < grid_size; j++) {
+        // Right
 
-          ctx.beginPath();
-          ctx.moveTo(particles[0][j].position.x, particles[0][j].position.y);
-          ctx.lineTo(particles[0][j].position.x, particles[0][j].position.y);
+        for (var i = 0; i < grid_size; i++) {
 
-          for (var i = 0; i < grid_size; i++) {
-            ctx.lineTo(particles[i][j].position.x, particles[i][j].position.y);
-          }
-
-          ctx.lineTo(particles[grid_size - 1][j].position.x, particles[grid_size - 1][j].position.y);
-          ctx.stroke();
+          var particle = particles[i][last_grid];
+          var position = particle.position;
+          ctx.lineTo(position.x, position.y);
 
         }
+
+        // Bottom
+
+        for (var i = last_grid; i >= 0; i--) {
+
+          var particle = particles[last_grid][i];
+          var position = particle.position;
+          ctx.lineTo(position.x, position.y);
+
+        }
+
+        // Left
+
+        for (var i = last_grid; i >= 0; i--) {
+
+          var particle = particles[i][0];
+          var position = particle.position;
+          ctx.lineTo(position.x, position.y);
+
+        }
+
+        ctx.fill();
 
       }
 

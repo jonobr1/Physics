@@ -615,6 +615,7 @@ Particle = (function (Vector, _) {
     makeFixed: function() {
       this.fixed = true;
       this.velocity.clear();
+      return this;
     },
 
     /**
@@ -629,6 +630,7 @@ Particle = (function (Vector, _) {
       this.force.clear();
       this.mass = 1.0;
 
+      return this;
     },
 
     /**
