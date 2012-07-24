@@ -32,7 +32,7 @@ define([
 
       if (this.__equilibrium) {
         this.__equilibrium = false;
-        update.call(this);;
+        update.call(this);
       }
 
       return this;
@@ -44,6 +44,8 @@ define([
   function update() {
 
     var _this = this;
+
+    console.log(this);
 
     this.tick();
 

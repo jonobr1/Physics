@@ -1,13 +1,18 @@
 define([
 ], function() {
 
-  // Pulled only what's needed from:
+  /**
+   * Pulled only what's needed from:
+   * 
+   * Underscore.js 1.3.3
+   * (c) 2009-2012 Jeremy Ashkenas, DocumentCloud Inc.
+   * http://documentcloud.github.com/underscore
+   */
 
-  // Underscore.js 1.3.3
-  // (c) 2009-2012 Jeremy Ashkenas, DocumentCloud Inc.
-  // http://documentcloud.github.com/underscore
-
+  var ArrayProto = Array.prototype;
   var hasOwnProperty = Object.prototype.hasOwnProperty;
+  var slice = ArrayProto.slice;
+  var nativeForEach = ArrayProto.forEach;
 
   var has = function(obj, key) {
     return hasOwnProperty.call(obj, key);
@@ -39,7 +44,7 @@ define([
     each: each,
 
     extend: function(obj) {
-      each(slice.call(arguments, l), function(source) {
+      each(slice.call(arguments, 1), function(source) {
         for (var prop in source) {
           obj[prop] = source;
         }

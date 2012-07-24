@@ -1,5 +1,5 @@
 define([
-  'physics/Vector',
+  'Vector',
   'common'
 ], function(Vector, _) {
 

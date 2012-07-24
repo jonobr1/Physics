@@ -49,6 +49,7 @@ function build(_params) {
   var to_write = '';
   var ensured = {};
 
+
   for (var name in params.paths) {
     var path = params.baseUrl + params.paths[name] + '.js';
     var str = read_file(path);
