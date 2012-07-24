@@ -1,12 +1,11 @@
 
 var params = {
   "baseUrl": "../src/",
-  "main": "System",
-  "out": "../build/physics.js",
+  "main": "Physics",
+  "out": "../build/Physics.js",
   "minify": false,
-  "shortcut": "physics.System",
-  "paths": {},
-  "namespaces": ["physics"]
+  "shortcut": "Physics",
+  "paths": {}
 }
 
 require('./builder.js').build(params);

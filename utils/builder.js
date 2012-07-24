@@ -17,7 +17,6 @@ var fs = require('fs'),
     defined,
     third_party,
     request_counts,
-    namespaces,
     next_load = '',
     next_path = '';
 
@@ -31,24 +30,17 @@ exports.license = read_file('../license.txt');
 function build(_params) {
 
   params = _params;
-  params.namespaces = _params.namespaces || [];
 
   defined = {};
   third_party = {};
   request_counts = {};
-  namespaces = {};
 
   var deps = [];
 
   load_module(params.baseUrl + params.main + '.js', params.main);
 
-  for (var i = 0; i < params.namespaces.length; i++) {
-    namespaces[params.namespaces[i]] = true;
-  }
-
-  var to_write = '';
+  var to_write = '(function() {\n\nvar root = this, previousShortcut = root.' + params.shortcut + ';\n\n';
   var ensured = {};
-
 
   for (var name in params.paths) {
     var path = params.baseUrl + params.paths[name] + '.js';
@@ -61,32 +53,6 @@ function build(_params) {
     to_write += third_party[name] + "\n\n";
     if (params.verbose) console.log('Loaded: ' + path);
     //deps.push(path);
-  }
-
-  // Ensure namespaces
-  for (i in namespaces) {
-
-    var split = i.split('/');
-
-    for (var j = 0; j < split.length; j++) {
-      var cur = [];
-      if (j == 0 && !ensured[split[j]]) {
-        to_write += '/** @namespace */\n';
-        to_write += 'var ' + split[j] + ' = ' + split[j] + ' || {};\n\n';
-        ensured[split[j]] = true;
-      } else {
-        for (var k = 0; k <= j; k++) {
-          cur.push(split[k]);
-        }
-        var curn = cur.join('.');
-        if (!ensured[curn]) {
-          to_write += '/** @namespace */\n';
-          to_write += curn + ' = ' + curn + ' || {};\n\n';
-        }
-        ensured[curn] = true;
-      }
-    }
-
   }
 
   var shared_count = 0;
@@ -104,7 +70,16 @@ function build(_params) {
   }
   
 
-  to_write += params.shortcut + ' = ' + params.main.replace(/\//g, '.') + ' = ' + defined[params.main].getClosure() + ';';
+  to_write += 'root.' + params.shortcut + ' = ' + params.main.replace(/\//g, '.') + ' = ' + defined[params.main].getClosure() + ';';
+
+  // TODO: Add no conflict
+
+  // to_write += '\n\n';
+  // to_write += 'root.' + params.shortcut + '.noConflict = function() {\n';
+  // to_write += 'root.' + params.shortcut + ' = previousShortcut;\n';
+  // to_write += 'return this;\n';
+  // to_write += '};\n';
+  to_write += '\n\n});'
 
   if (params.verbose) console.log('Exported: ' + params.main + ' to window.' + params.shortcut);
 
