@@ -2,8 +2,57 @@
 <html>
   <head>
     <title>Physics for JavaScript</title>
+    <meta name="description" content="A JavaScript port of the popular Traer Physics Library from Processing." />
+    <link rel="stylesheet" type="text/css" href="styles/style.css" />
   </head>
   <body>
-    
+    <h1>
+      Physics
+    </h1>
+    <p>
+      A JavaScript port of the popular <a href="http://murderandcreate.com/physics/">Traer Physics Library</a> from <a href="http://processing.org/">Processing</a>.
+    </p>
+    <p>
+      There are many great physics engines out there for JavaScript, so why go and make this one? And, more importantly <strong>why should I use this</strong>?
+    </p>
+    <ul id="proof">
+      <li>
+        <strong>Familiar</strong>: The API hails from the popular <a href="http://murderandcreate.com/physics/">Traer Physics Library</a> with some additional sugar for quick-and-dirty simulations. Make a couple <code>Physics.Particle</code>&apos;s and attach a <code>Physics.Spring</code> and away you go!
+      </li>
+      <li>
+        <strong>Static</strong>: Physics comes with a helper instance, <code>Physics.System</code>, which has an animation loop ready for you. Just call <code>Physics.System.update()</code> to trigger the update loop and when all particles are resting the animation loop discontinues.
+      </li>
+      <li>
+        <strong>Flexible</strong>: Physics source is <a href="http://requirejs.org/">requirified</a> so you can take what you need. Many physics engine's require their own Vector class, but with Physics you can swap in your own. This is particularly useful for larger projects where Physics is great to get off the ground and can be replaced easily at a later date for a more optimized engine.
+      </li>
+      <li>
+        <strong>Light</strong>: Clocking in at around <code>12kb</code> Physics is featherweight compared to other JavaScript Physics Libraries.
+      </li>
+    </ul>
+    <p>
+      <strong>Bottom-line</strong>: If you&apos;re like me then at the end of the day you just want to make something work. Physics is great for sketching and quick prototyping. It&apos;s not meant to be the foundation for your next HTML5 game nor replace other more robust Physics Engines.
+    </p>
+    <h2 id="examples">Examples</h2>
+    <p>
+      Physics is renderer agnostic. This means that it only stores positions, how you draw those positions and relationships are up to you! Below are just a few examples in different HTML rendering contexts to get you started:
+    </p>
+    <ul>
+      <li></li>
+    </ul>
+    <h2 id="usage">Usage</h2>
+    <h3>Simple</h3>
+    <h3>Advanced</h3>
+    <!-- <h2 id="in-the-wild">In the Wild</h2> -->
+    <h2 id="credits">Credits</h2>
+    <p>
+      Physics is not possible without these great contributions to JavaScript:
+    </p>
+    <ul>
+      <li><strong><a href="http://requirejs.org/">RequireJS</a></strong></li>
+      <li><strong><a href="http://underscorejs.org/">Underscore.js</a></strong></li>
+      <li><strong><a href="http://github.com/mrdoob/three.js/">Three.js</a></strong></li>
+      <li><strong><a href="http://nodejs.org/">Node.js</a></strong></li>
+      <li><strong><a href="http://workshop.chromeexperiments.com/">dat.GUI</a></strong></li>
+    </ul>
   </body>
 </html>
