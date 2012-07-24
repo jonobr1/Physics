@@ -46,19 +46,8 @@ function build(_params) {
     namespaces[params.namespaces[i]] = true;
   }
 
-  // for (var i in defined) {
-  //   if (params.verbose) console.log('Loaded: ' + defined[i].path);
-  //   deps.push(defined[i].path);
-  //   console.log(defined[i].module);
-  //   if (defined[i].module) {
-  //     var namespace = i.substr(0, i.lastIndexOf('/'));
-  //     namespaces[namespace] = true;
-  //   }
-  // }
-
   var to_write = '';
   var ensured = {};
-
 
   for (var name in params.paths) {
     var path = params.baseUrl + params.paths[name] + '.js';
