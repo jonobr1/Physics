@@ -245,11 +245,11 @@
       <section id="purpose">
         <h2>Purpose</h2>
         <p>
-          There are many great physics engines out there for JavaScript, so why go and make this one? And, more importantly <strong>why should I use this</strong>?
+          There are many great physics engines out there for JavaScript, so why go and make this one? And, more importantly <strong>why would I use this</strong>?
         </p>
         <ul id="proof">
           <li>
-            <strong>Familiar</strong>: The API hails from the popular <a href="http://murderandcreate.com/physics/">Traer Physics Library</a> with some additional sugar for quick-and-dirty simulations. Make a couple <code>Physics.Particle</code>&apos;s and attach a <code>Physics.Spring</code> and away you go!
+            <strong>Familiar</strong>: The API hails from the popular <a href="http://murderandcreate.com/physics/">Traer Physics Library</a> with some additional sugar for quick-and-dirty simulations. Make a couple <code>Physics.Particle</code>&apos;s, attach a <code>Physics.Spring</code> or a <code>Physics.Attraction</code> and away you go!
           </li>
           <li>
             <strong>Convenient</strong>: the <code>Physics</code> class itself extends <code>Physics.ParticleSystem</code> sets it up and offers an animation loop for you. Create a <code>var physics = new Physics()</code> and call <code>physics.update()</code> when you want to recalculate. Unlike other libraries, when Physics sees that all particles are resting it discontinues its animation loop.
@@ -288,7 +288,7 @@
           <li class="title"><h3>common</h3></li>
           <li class="description">
             An object that contains utility methods for class inheritance, optimized JavaScript iterating, and definitive property checking. All methods are cherry picked from <a href="#">underscore.js</a>. While
-            the file is common, the exported object is referred to as <code>_</code>, because of its lineage.
+            the file is common, the exported object is referred to as <code>_</code> because of its lineage.
           </li>
           <li>
             <p class="method">
