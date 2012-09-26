@@ -11,9 +11,12 @@ body {
   font-size: $font-size;
   line-height: $line-height;
   font-family: 'Open Sans', Lucida, sans-serif;
-  background: #e2dddb;
   text-shadow: 1px 1px rgba(255, 255, 255, 0.75);
   color: $font-color;
+  background: #e2dddb;
+  &.marbles {
+    background: #fff;
+  }
 }
 
 a {

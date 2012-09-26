@@ -79,9 +79,11 @@ body {
   font-size: 14px;
   line-height: 20px;
   font-family: 'Open Sans', Lucida, sans-serif;
-  background: #e2dddb;
   text-shadow: 1px 1px rgba(255, 255, 255, 0.75);
-  color: #333333; }
+  color: #333333;
+  background: #e2dddb; }
+  body.marbles {
+    background: #fff; }
 
 a:link, a:visited {
   color: #333333; }
