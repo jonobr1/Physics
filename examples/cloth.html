@@ -7,6 +7,7 @@
   </head>
   <body>
     <canvas id="canvas-field" width="800" height="600"></canvas>
+    <script type="text/javascript" src="../utils/dom.js"></script>
     <script type="text/javascript" src="../build/Physics.js"></script>
     <script type="text/javascript">
 
@@ -90,11 +91,11 @@
 
       physics.onUpdate(draw).update();
 
-      // Add mouse events.
+      // Add mouse events. Cross-browser mouse events in /utils/bind.js
 
-      canvas.addEventListener('mousedown', onCanvasMouseDown, false);
-      window.addEventListener('mousemove', onCanvasMouseMove, false);
-      window.addEventListener('mouseup', onCanvasMouseUp, false);
+      dom.bind(canvas, 'mousedown', onCanvasMouseDown)
+      dom.bind(window, 'mousemove', onCanvasMouseMove)
+      dom.bind(window, 'mouseup', onCanvasMouseUp)
 
       function onCanvasMouseDown(e) {
 
@@ -198,7 +199,7 @@
 
         // Fill the surface of the grid.
 
-        ctx.fillStyle = '#f00';
+        ctx.fillStyle = '#333';
         ctx.beginPath();
 
         // Top
@@ -262,7 +263,7 @@
 
           // style the selection
 
-          ctx.strokeStyle = 'rgba(255, 192, 0, 0.75)';
+          ctx.strokeStyle = 'rgba(255, 220, 0, 1.0)';
           ctx.lineWidth = 5;
           ctx.beginPath();
           ctx.arc(mouse.x, mouse.y, selection.radius, 0, Math.PI * 2.0, false);

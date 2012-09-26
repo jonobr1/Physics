@@ -2,57 +2,396 @@
 <html>
   <head>
     <title>Physics for JavaScript</title>
+
+    <meta name="title" content="Physics for JavaScript" />
     <meta name="description" content="A JavaScript port of the popular Traer Physics Library from Processing." />
+
+    <link href='http://fonts.googleapis.com/css?family=Lekton|Open+Sans:400italic,700italic,400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="styles/style.css" />
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+
   </head>
   <body>
-    <h1>
-      Physics
-    </h1>
-    <p>
-      A JavaScript port of the popular <a href="http://murderandcreate.com/physics/">Traer Physics Library</a> from <a href="http://processing.org/">Processing</a>.
-    </p>
-    <p>
-      There are many great physics engines out there for JavaScript, so why go and make this one? And, more importantly <strong>why should I use this</strong>?
-    </p>
-    <ul id="proof">
+    <ul id="toc">
       <li>
-        <strong>Familiar</strong>: The API hails from the popular <a href="http://murderandcreate.com/physics/">Traer Physics Library</a> with some additional sugar for quick-and-dirty simulations. Make a couple <code>Physics.Particle</code>&apos;s and attach a <code>Physics.Spring</code> and away you go!
+        <a href="#">Physics</a>
       </li>
       <li>
-        <strong>Static</strong>: Physics comes with a helper instance, <code>Physics.System</code>, which has an animation loop ready for you. Just call <code>Physics.System.update()</code> to trigger the update loop and when all particles are resting the animation loop discontinues.
+        <a href="#downloads">Downloads</a>
       </li>
       <li>
-        <strong>Flexible</strong>: Physics source is <a href="http://requirejs.org/">requirified</a> so you can take what you need. Many physics engine's require their own Vector class, but with Physics you can swap in your own. This is particularly useful for larger projects where Physics is great to get off the ground and can be replaced easily at a later date for a more optimized engine.
+        <a href="#purpose">Purpose</a>
       </li>
       <li>
-        <strong>Light</strong>: Clocking in at around <code>12kb</code> Physics is featherweight compared to other JavaScript Physics Libraries.
+        <a href="#usage">Usage</a>
+      </li>
+      <li>
+        <a href="#examples">Examples</a>
+      </li>
+      <li>
+        <a href="#documentation">Documentation</a>
+      </li>
+      <li>
+        <a href="#credits">Credits</a>
       </li>
     </ul>
-    <p>
-      <strong>Bottom-line</strong>: If you&apos;re like me then at the end of the day you just want to make something work. Physics is great for sketching and quick prototyping. It&apos;s not meant to be the foundation for your next HTML5 game nor replace other more robust Physics Engines.
-    </p>
-    <h2 id="examples">Examples</h2>
-    <p>
-      Physics is renderer agnostic. This means that it only stores positions, how you draw those positions and relationships are up to you! Below are just a few examples in different HTML rendering contexts to get you started:
-    </p>
-    <ul>
-      <li><a href="./examples/cloth.html">Cloth</a></li>
-    </ul>
-    <h2 id="usage">Usage</h2>
-    <h3>Simple</h3>
-    <h3>Advanced</h3>
-    <!-- <h2 id="in-the-wild">In the Wild</h2> -->
-    <h2 id="credits">Credits</h2>
-    <p>
-      Physics is not possible without these great contributions to JavaScript:
-    </p>
-    <ul>
-      <li><strong><a href="http://requirejs.org/">RequireJS</a></strong></li>
-      <li><strong><a href="http://underscorejs.org/">Underscore.js</a></strong></li>
-      <li><strong><a href="http://github.com/mrdoob/three.js/">Three.js</a></strong></li>
-      <li><strong><a href="http://nodejs.org/">Node.js</a></strong></li>
-      <li><strong><a href="http://workshop.chromeexperiments.com/">dat.GUI</a></strong></li>
-    </ul>
+    <div id="content">
+
+      <section id="introduction">
+        <div id="fold">
+          <!-- <canvas id="splash" width="800" height="600"></canvas> -->
+          <h1>Physics</h1>
+          <!--
+          <script type="text/javascript" src="./utils/dom.js"></script>
+          <script type="text/javascript" src="https://raw.github.com/mrdoob/three.js/master/build/three.min.js"></script>
+          <script type="text/javascript" src="./build/physics.js"></script>
+          <script type="text/javascript">
+
+            (function() {
+
+              // Three.js variables, i.e: Rendering variables
+
+              var renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('splash'),
+                antialias: true
+              });
+
+              var scene = new THREE.Scene();
+              var camera = new THREE.OrthographicCamera(0, renderer.domElement.width, 0, renderer.domElement.height, -10000);
+              var spheres = [];
+
+              scene.add(camera);
+
+              // Physics related constants
+
+              var amount = 3;
+              var mass = 0.2, radius = 50, strength = 1000000,
+                restLength = 100, repulsion = 500, threshold = radius * 2;
+              var physics = new Physics(mass);
+
+              for (var i = 0; i < amount; i++) {
+
+                var x1 = renderer.domElement.width / 2;
+                var y1 = renderer.domElement.height / 2;
+
+                var x2 = Math.random() * renderer.domElement.width;
+                var y2 = Math.random() * renderer.domElement.height;
+
+                var anchor = physics.makeParticle(mass, x1, y1);
+                var particle = physics.makeParticle(mass, x2, y2);
+
+                anchor.makeFixed();
+                // var spring = physics.makeSpring(anchor, particle, strength, damping, restLength);
+                var attraction = physics.makeAttraction(anchor, particle, strength, renderer.domElement.width);
+
+              var texture = new THREE.Texture(getPattern());
+              texture.needsUpdate = true;
+              texture.anistropy = 16;
+
+                var geometry = new THREE.SphereGeometry(radius, 32, 32);
+                var material = new THREE.MeshBasicMaterial({
+                  color: 0xffffff,
+                  map: texture
+                });
+
+                var mesh = new THREE.Mesh(geometry, material);
+                mesh.position.z = i * 100;  // Inhabit different z-depths
+
+                scene.add(mesh);
+
+                spheres.push({
+                  particle: particle,
+                  anchor: anchor,
+                  geometry: geometry,
+                  material: material,
+                  mesh: mesh
+                });
+
+              }
+
+              // Add repulsion between each particle and all other particles
+
+              for (var i = 0, l = spheres.length; i < l; i++) {
+
+                var a = spheres[i];
+
+                for (var j = 0; j < l; j++) {
+
+                  if (j == i) {
+                    continue;
+                  }
+
+                  var b = spheres[j];
+
+                  physics.makeAttraction(a.particle, b.particle, - repulsion, threshold);
+
+                }
+
+              }
+
+              renderer.setSize(renderer.domElement.width, renderer.domElement.height);
+
+              // This is like our draw loop
+              var framecount = 0;
+
+              physics.onUpdate(function() {
+
+                for (var i = 0, l = spheres.length; i < l; i++) {
+
+                  // Set the position of the mesh to the position of the particle
+
+                  var sphere = spheres[i];
+                  var particle = sphere.particle;
+                  var mesh = sphere.mesh;
+
+                  mesh.position.x = particle.position.x;
+                  mesh.position.y = particle.position.y;
+                  // mesh.rotation.x -= particle.force.length();
+                  mesh.rotation.y += particle.velocity.length() / 10;
+                  mesh.rotation.z += particle.force.length() / 10;
+
+                }
+
+                framecount++;
+
+                renderer.render(scene, camera);
+
+              });
+
+              // Let's kick off the calculations right away!
+
+              physics.update();
+
+              /**
+               * Make various stripe patterns in canvas.
+               */
+              function getPattern() {
+
+                var possible = 10;
+
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+                var orientation = Math.random() > 0.4 ? true: false;
+
+                canvas.width = canvas.height = 128;
+
+                ctx.fillStyle = 'white';
+                ctx.strokeStyle = 'black';
+
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (var i = 0, l = Math.round(Math.random() * possible / 2 + possible / 5); i < l; i++) {
+
+                  ctx.lineWidth = (l / possible) * canvas.height / l;
+
+                  var pct = i / l;
+
+                  var x1 = 0;
+                  var x2 = canvas.width;
+                  var y = pct * canvas.height;
+
+                  if (orientation) {
+
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y);
+                    ctx.lineTo(x2, y);
+                    ctx.stroke();
+
+                  } else {
+
+                    ctx.beginPath();
+                    ctx.moveTo(y, x1);
+                    ctx.lineTo(y, x2);
+                    ctx.stroke();
+
+                  }
+
+                }
+
+                return canvas;
+
+              }
+
+            })();
+
+          </script>
+          -->
+        </div>
+        <p>
+          A JavaScript port of the popular <a href="http://murderandcreate.com/physics/">Traer Physics Library</a> from <a href="http://processing.org/">Processing</a>.
+        </p>
+      </section>
+
+      <section id="downloads">
+        <h2>Downloads</h2>
+        <p>
+          <dt>
+            <a href="#">Development Version</a>
+          </dt>
+          <dd>
+            Uncompressed with comments
+          </dd>
+        </p>
+        <p>
+          <dt>
+            <a href="#">Production Version</a>
+          </dt>
+          <dd>
+            Minified using Closure Compiler
+          </dd>
+        </p>
+      </section>
+
+      <section id="purpose">
+        <h2>Purpose</h2>
+        <p>
+          There are many great physics engines out there for JavaScript, so why go and make this one? And, more importantly <strong>why should I use this</strong>?
+        </p>
+        <ul id="proof">
+          <li>
+            <strong>Familiar</strong>: The API hails from the popular <a href="http://murderandcreate.com/physics/">Traer Physics Library</a> with some additional sugar for quick-and-dirty simulations. Make a couple <code>Physics.Particle</code>&apos;s and attach a <code>Physics.Spring</code> and away you go!
+          </li>
+          <li>
+            <strong>Convenient</strong>: the <code>Physics</code> class itself extends <code>Physics.ParticleSystem</code> sets it up and offers an animation loop for you. Create a <code>var physics = new Physics()</code> and call <code>physics.update()</code> when you want to recalculate. Unlike other libraries, when Physics sees that all particles are resting it discontinues its animation loop.
+          </li>
+          <li>
+            <strong>Flexible</strong>: Physics source is <a href="http://requirejs.org/">requirified</a> so you can take what you need. Many physics engine's require their own Vector class, but with Physics you can swap in your own. This is particularly useful for larger projects where Physics is great to get off the ground and can be replaced easily at a later date for a more optimized engine.
+          </li>
+          <li>
+            <strong>Light</strong>: Clocking in at around <code>12kb</code> Physics is featherweight compared to other JavaScript Physics Libraries.
+          </li>
+          <li>
+            <strong>Bottom-line</strong>: If you&apos;re like me then at the end of the day you just want to make something work. Physics is great for sketching and quick prototyping. It&apos;s not meant to be the foundation for your next HTML5 game nor replace other more robust Physics Engines.
+          </li>
+        </ul>
+      </section>
+
+      <section id="examples">
+        <h2>Examples</h2>
+        <p>
+          Physics is renderer agnostic. This means that it only stores positions, how you draw those positions and relationships are up to you! Below are just a few examples in different HTML rendering contexts to get you started:
+        </p>
+        <ul>
+          <li><a href="./examples/cloth.html">Cloth</a></li>
+        </ul>
+      </section>
+
+      <section id="usage">
+        <h2>Usage</h2>
+        <h3>Simple</h3>
+        <h3>Advanced</h3>
+      </section>
+
+      <section id="documentation">
+        <h2>Documentation</h2>
+        <ul id="common">
+          <li class="title"><h3>common</h3></li>
+          <li class="description">
+            An object that contains utility methods for class inheritance, optimized JavaScript iterating, and definitive property checking. All methods are cherry picked from <a href="#">underscore.js</a>. While
+            the file is common, the exported object is referred to as <code>_</code>, because of its lineage.
+          </li>
+          <li>
+            <p class="method">
+              <strong>each</strong> <code>_.each(list, iterator, [context])</code>
+            </p>
+            <p>
+              Iterates over a list (array, object, or function) with native forEach if available. A fast for statement.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>extend</strong> <code>_.extend(obj, *obj)</code>
+            </p>
+            <p>
+              Pass in a series of objects in which the first object passed will inherit all properties of subsequent objects. If two objects have the same property the latter's property is inherited.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>indexOf</strong> <code>_.indexOf(array, item, [isSorted])</code>
+            </p>
+            <p>
+              Given an array returns the index of the item. If not found returns -1.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>identity</strong> <code>_.identity([value])</code>
+            </p>
+            <p>
+              A singleton function that returns whatever's passed. Used as an empty function when invoking arbitrary properties of an object or class.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>isNumber</strong> <code>_.isNumber(obj)</code>
+            </p>
+            <p>
+              Returns true if the obj passed is a number, otherwise false.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>isFunction</strong> <code>_.isFunction(obj)</code>
+            </p>
+            <p>
+              Returns true if the obj passed is a function, otherwise false.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>isUndefined</strong> <code>_.isUndefined(obj)</code>
+            </p>
+            <p>
+              Returns true if the obj passed is undefined, otherwise false.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>isNull</strong> <code>_.isNull(obj)</code>
+            </p>
+            <p>
+              Returns true if the obj passed is null, otherwise false.
+            </p>
+          </li>
+        </ul>
+
+        <ul id="vector">
+          <li class="title"><h3>Vector</h3></li>
+          <li class="description">
+            A class that has x, y positions and a number of convenient methods for executing calculations and operations against them.
+          </li>
+          <li>
+            <p class="construction">
+              <strong>construction</strong> <code>new Vector([x], [y]);</code>
+            </p>
+            <p>
+
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>x</strong> <code>vector.x</code>
+            </p>
+          </li>
+        </ul>
+
+      </section>
+
+      <section id="credits">
+        <h2>Credits</h2>
+        <p>
+          Physics is not possible without these great contributions to JavaScript:
+        </p>
+        <ul>
+          <li><strong><a href="http://requirejs.org/">RequireJS</a></strong></li>
+          <li><strong><a href="http://underscorejs.org/">Underscore.js</a></strong></li>
+          <li><strong><a href="http://github.com/mrdoob/three.js/">Three.js</a></strong></li>
+          <li><strong><a href="http://nodejs.org/">Node.js</a></strong></li>
+          <li><strong><a href="http://workshop.chromeexperiments.com/">dat.GUI</a></strong></li>
+        </ul>
+      </section>
+
+    </div>
   </body>
 </html>

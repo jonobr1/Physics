@@ -1,6 +1,82 @@
+/**
+ * Styling the index page requires bourbon
+ * http://thoughtbot.com/bourbon/
+ */
 * {
   margin: 0;
   padding: 0; }
+
+body {
+  font-size: 14px;
+  line-height: 20px;
+  font-family: 'Open Sans', Lucida, sans-serif;
+  background: #e2dddb;
+  text-shadow: 1px 1px rgba(255, 255, 255, 0.75);
+  color: #333333; }
+
+a:link, a:visited {
+  color: #333333; }
+a:hover, a:active {
+  text-decoration: none; }
+
+#toc {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 125px;
+  padding: 40px 20px;
+  border-right: 1px solid white; }
+
+#content {
+  position: absolute;
+  top: 0;
+  left: 185px;
+  width: 600px;
+  padding: 40px 0;
+  border-left: 1px solid white; }
+  #content > * {
+    padding-left: 20px; }
+  #content p.method, #content p.property, #content p.constructor {
+    margin-bottom: 0; }
+
+#content section, #toc section {
+  margin-bottom: 20px; }
+  #content section:after, #toc section:after {
+    position: relative;
+    display: block;
+    content: "";
+    height: 0;
+    width: 125%;
+    margin: 20px 0 0px;
+    padding: 0;
+    border-bottom: 1px solid white; }
+  #content section p, #toc section p {
+    margin-bottom: 20px; }
+#content ul, #content ol, #content, #toc ul, #toc ol, #toc {
+  list-style: none; }
+  #content ul li:not(:last-child), #content ol li:not(:last-child), #content li:not(:last-child), #toc ul li:not(:last-child), #toc ol li:not(:last-child), #toc li:not(:last-child) {
+    margin-bottom: 20px; }
+#content dd, #toc dd {
+  margin-bottom: 20px; }
+#content #documentation dt, #toc #documentation dt {
+  font-weight: bold; }
+#content code, #toc code {
+  font-family: 'Lekton', monospace;
+  -webkit-border-radius: 3px;
+  border-radius: 3px; }
+
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 20px; }
+
+h1 {
+  font-size: 42px;
+  line-height: 60px; }
+
+h2 {
+  font-size: 20px;
+  line-height: 40px;
+  text-transform: capitalize; }
 
 canvas {
   display: block;
