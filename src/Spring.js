@@ -67,8 +67,6 @@ define([
      * Returns a boolean describing whether the spring is resting or not.
      * Convenient for knowing whether or not the spring needs another update
      * tick.
-     *
-     * TODO: Assumes a length of zero at the moment...
      */
     resting: function() {
 
@@ -76,7 +74,7 @@ define([
       var b = this.b;
       var l = this.length;
 
-      return (a.fixed && b.fixed)
+      return !this.on || (a.fixed && b.fixed)
         || (a.fixed && (l === 0 ? b.position.equals(a.position) : b.position.distanceTo(a.position) <= l) && b.resting())
         || (b.fixed && (l === 0 ? a.position.equals(b.position) : a.position.distanceTo(b.position) <= l) && a.resting());
 

@@ -98,12 +98,12 @@ define([
       return this.x * v.x + this.y * v.y;
     },
 
-    lengthSq: function() {
+    lengthSquared: function() {
       return this.x * this.x + this.y * this.y;
     },
 
     length: function() {
-      return Math.sqrt(this.lengthSq());
+      return Math.sqrt(this.lengthSquared());
     },
 
     normalize: function() {
@@ -124,7 +124,7 @@ define([
     },
 
     equals: function(v) {
-      return this.distanceTo(v) < 0.0001 /* almost same position */;
+      return (this.distanceTo(v) < 0.0001 /* almost same position */);
     },
 
     lerp: function(v, t) {
@@ -134,7 +134,7 @@ define([
     },
 
     isZero: function() {
-      return ( this.lengthSq() < 0.0001 /* almost zero */ );
+      return (this.length() < 0.0001 /* almost zero */ );
     }
 
   });

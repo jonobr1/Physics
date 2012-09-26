@@ -7,7 +7,7 @@
   </head>
   <body>
     <canvas id="canvas-field" width="800" height="600"></canvas>
-    <script type="text/javascript" src="../utils/dom.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
     <script type="text/javascript" src="../build/Physics.js"></script>
     <script type="text/javascript">
 
@@ -91,11 +91,11 @@
 
       physics.onUpdate(draw).update();
 
-      // Add mouse events. Cross-browser mouse events in /utils/bind.js
+      // Add mouse events. Cross-browser mouse events from jQuery.
 
-      dom.bind(canvas, 'mousedown', onCanvasMouseDown)
-      dom.bind(window, 'mousemove', onCanvasMouseMove)
-      dom.bind(window, 'mouseup', onCanvasMouseUp)
+      $(canvas).bind('mousedown', onCanvasMouseDown);
+      $(window).bind('mousemove', onCanvasMouseMove);
+      $(window).bind('mouseup', onCanvasMouseUp);
 
       function onCanvasMouseDown(e) {
 
@@ -263,7 +263,7 @@
 
           // style the selection
 
-          ctx.strokeStyle = 'rgba(255, 220, 0, 1.0)';
+          ctx.strokeStyle = 'rgb(255, 160, 0)';
           ctx.lineWidth = 5;
           ctx.beginPath();
           ctx.arc(mouse.x, mouse.y, selection.radius, 0, Math.PI * 2.0, false);

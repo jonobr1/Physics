@@ -216,12 +216,12 @@ Vector = (function (_) {
       return this.x * v.x + this.y * v.y;
     },
 
-    lengthSq: function() {
+    lengthSquared: function() {
       return this.x * this.x + this.y * this.y;
     },
 
     length: function() {
-      return Math.sqrt(this.lengthSq());
+      return Math.sqrt(this.lengthSquared());
     },
 
     normalize: function() {
@@ -252,7 +252,7 @@ Vector = (function (_) {
     },
 
     isZero: function() {
-      return ( this.lengthSq() < 0.0001 /* almost zero */ );
+      return ( this.lengthSquared() < 0.0001 /* almost zero */ );
     }
 
   });
@@ -760,7 +760,7 @@ Attraction = (function (Vector, _) {
 
      var a2b = new Vector().sub(a.position, b.position);
 
-     var a2bdistanceSquared = Math.max(a2b.lengthSq(), this.distanceMinSquared);
+     var a2bdistanceSquared = Math.max(a2b.lengthSquared(), this.distanceMinSquared);
 
      var force = (this.constant * a.mass * b.mass) / a2bdistanceSquared;
 

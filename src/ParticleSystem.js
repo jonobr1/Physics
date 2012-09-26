@@ -20,12 +20,10 @@ define([
    * 
    * @version 0.3
    * @date March 25, 2012
-   *
-   * @class
    */
 
   /**
-   * The who kit and kaboodle.
+   * The whole kit and kaboodle.
    *
    * @class
    */

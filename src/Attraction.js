@@ -28,7 +28,7 @@ define([
 
      var a2b = new Vector().sub(a.position, b.position);
 
-     var a2bdistanceSquared = Math.max(a2b.lengthSq(), this.distanceMinSquared);
+     var a2bdistanceSquared = Math.max(a2b.lengthSquared(), this.distanceMinSquared);
 
      var force = (this.constant * a.mass * b.mass) / a2bdistanceSquared;
 
@@ -64,7 +64,7 @@ define([
       var b = this.b;
       var l = this.distanceMin;
 
-      return (a.fixed && b.fixed)
+      return !this.on || (a.fixed && b.fixed)
         || (a.fixed && b.position.distanceTo(a.position) <= l && b.resting())
         || (b.fixed && a.position.distanceTo(b.position) <= l && a.resting());
 

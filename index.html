@@ -8,7 +8,19 @@
 
     <link href='http://fonts.googleapis.com/css?family=Lekton|Open+Sans:400italic,700italic,400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="styles/style.css" />
+
+    <script type="text/javascript" src="./third-party/prettify/prettify.js"></script>
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+
+    <script type="text/javascript">
+
+      $(function() {
+
+        prettyPrint();
+
+      });
+
+    </script>
 
   </head>
   <body>
@@ -30,6 +42,15 @@
       </li>
       <li>
         <a href="#documentation">Documentation</a>
+        <ul>
+          <li><a href="#physics">Physics</a></li>
+          <li><a href="#particle-system">ParticleSystem</a></li>
+          <li><a href="#particle">Particle</a></li>
+          <li><a href="#attraction">Attraction</a></li>
+          <li><a href="#spring">Spring</a></li>
+          <li><a href="#vector">Vector</a></li>
+          <li><a href="#common">common</a></li>
+        </ul>
       </li>
       <li>
         <a href="#credits">Credits</a>
@@ -218,7 +239,7 @@
           -->
         </div>
         <p>
-          A JavaScript port of the popular <a href="http://murderandcreate.com/physics/">Traer Physics Library</a> from <a href="http://processing.org/">Processing</a>.
+          A two-dimensional port into JavaScript of the popular <a href="http://murderandcreate.com/physics/">Traer Physics Library</a> from <a href="http://processing.org/">Processing</a>.
         </p>
       </section>
 
@@ -229,7 +250,7 @@
             <a href="#">Development Version</a>
           </dt>
           <dd>
-            Uncompressed with comments
+            Uncompressed with comments about 25kb
           </dd>
         </p>
         <p>
@@ -237,7 +258,7 @@
             <a href="#">Production Version</a>
           </dt>
           <dd>
-            Minified using Closure Compiler
+            Minified using Closure Compiler about 12kb
           </dd>
         </p>
       </section>
@@ -277,18 +298,800 @@
       </section>
 
       <section id="usage">
-        <h2>Usage</h2>
-        <h3>Simple</h3>
-        <h3>Advanced</h3>
+        <h2>Basic Usage</h2>
+        <!-- <h3>Simple</h3> -->
+        <pre>
+
+// Setup up a physics world.
+var physics = new Physics()
+  .onUpdate(function() {
+    // Draw loop
+    for (var i = 0; i &lt; 10; i++) {
+      var p = this.particles[i];
+      ctx.beginPath();
+      ctx.arc(p.position.x, p.position.y, 12.5, 0, Math.PI * 2, false);
+      ctx.fill();
+    }
+  });
+
+// Add particles to the physics.
+for (var i = 0; i &lt; 10; i++) {
+  var x = Math.random() * canvas.width;
+  var y = Math.random() * canvas.height;
+  physics.makeParticle(0.2, x, y);
+}
+
+// Create interactions between particles.
+for (var i = 0; i &lt; 10; i++) {
+  var p1 = physics.particles[i];
+  for (var j = 0; j &lt; 10; j++) {
+    if (i == j) {
+      continue;
+    }
+    var p2 = particles[j];
+    physics.makeAttraction(p1, p2, -10, 25);
+  }
+}
+        </pre>
+        <!-- <h3>Advanced</h3> -->
       </section>
 
       <section id="documentation">
         <h2>Documentation</h2>
+
+        <ul id="physics">
+          <li class="title"><h3>Physics</h3></li>
+          <li class="description">
+            Extends the ParticleSystem class, exposes all primitives of the Physics library, and adds extra logic for convenient updating. <em>If you already have an animation loop running in your app, then it's recommended to use Physics.ParticleSystem.</em> Unless specified methods return the instance for the purpose of chaining.
+          </li>
+          <li>
+            <p class="construction">
+              <strong>construction</strong> <code>var physics = new Physics();</code>
+            </p>
+            <p>
+
+            </p>
+          </li>
+          <li>
+            <p class="static property">
+              <strong>DEFAULT_GRAVITY</strong> <code>Physics.DEFAULT_GRAVITY</code>
+            </p>
+            <p>
+              The default gravity used during ParticleSystem's construction.
+            </p>
+          </li>
+          <li>
+            <p class="static property">
+              <strong>DEFAULT_DRAG</strong> <code>Physics.DEFAULT_DRAG</code>
+            </p>
+            <p>
+              The default drag used during ParticleSystem's construction.
+            </p>
+          </li>
+          <li>
+            <p class="static property">
+              <strong>Attraction</strong> <code>Physics.Attraction</code>
+            </p>
+            <p>
+              Exposed reference to the Attraction class.
+            </p>
+          </li>
+          <li>
+            <p class="static property">
+              <strong>Integrator</strong> <code>Physics.Integrator</code>
+            </p>
+            <p>
+              Exposed reference to the Integrator class.
+            </p>
+          </li>
+          <li>
+            <p class="static property">
+              <strong>Particle</strong> <code>Physics.Particle</code>
+            </p>
+            <p>
+              Exposed reference to the Particle class.
+            </p>
+          </li>
+          <li>
+            <p class="static property">
+              <strong>Spring</strong> <code>Physics.Spring</code>
+            </p>
+            <p>
+              Exposed reference to the Spring class.
+            </p>
+          </li>
+          <li>
+            <p class="static property">
+              <strong>Vector</strong> <code>Physics.Vector</code>
+            </p>
+            <p>
+              Exposed reference to the Vector class.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>onUpdate</strong> <code>physics.onUpdate(f)</code>
+            </p>
+            <p>
+              A function, f, to be invoked when physics is updating.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>update</strong> <code>physics.update()</code>
+            </p>
+            <p>
+              Forces physics to update calculations and kicks off it's own Request Animation Frame which will continue until all particles have become inert. <em>In particular, call this method to start the animation loop as well as after mouse interactions.</em>
+            </p>
+          </li>
+        </ul>
+
+        <ul id="particle-system">
+          <li class="title"><h3>ParticleSystem</h3></li>
+          <li class="description">
+            A class that keeps track of all the different aspects of the Physics space. It is responsible for calculating and updating all the particles, springs, attractions, and forces through an integrator. Unless specified methods return the instance for the purpose of chaining.
+          </li>
+          <li>
+            <p class="construction">
+              <strong>construction</strong> <code>var system = new Physics.ParticleSystem([gravity, drag]);</code>
+            </p>
+            <p>
+              
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>particles</strong> <code>system.particles</code>
+            </p>
+            <p>
+              An array holding all the particles in the system.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>springs</strong> <code>system.springs</code>
+            </p>
+            <p>
+              An array holding all the springs in the system.
+            </p>
+            <p class="property">
+              <strong>attractions</strong> <code>system.attractions</code>
+            </p>
+            <p>
+              An array holding all the attractions in the system.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>forces</strong> <code>system.forces</code>
+            </p>
+            <p>
+              An array holding all the forces in the system.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>integrator</strong> <code>system.integrator</code>
+            </p>
+            <p>
+              An instance of the <a href="http://gafferongames.com/game-physics/integration-basics/">physics integrator</a>. At the time of writing the system only has one integrator, <a href="http://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods">Runge Kutta</a>.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>hasDeadParticles</strong> <code>system.hasDeadParticles</code>
+            </p>
+            <p>
+              Boolean describing whether the system has dead particles or not.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>gravity</strong> <code>system.gravity</code>
+            </p>
+            <p>
+              A vector describing the x, y constant force in the system.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>drag</strong> <code>system.drag</code>
+            </p>
+            <p>
+              The amount of drag in the system.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>setGravity</strong> <code>system.setGravity(x, y)</code>
+            </p>
+            <p>
+              Convenience method to set gravity of the system.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>tick</strong> <code>system.tick()</code>
+            </p>
+            <p>
+              Update the integrator, call this on an animation loop.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>needsUpdate</strong> <code>system.needsUpdate()</code>
+            </p>
+            <p>
+              Checks all springs and attractions to see if the contained particles are inert / resting and returns a boolean.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>addParticle</strong> <code>system.addParticle(p)</code>
+            </p>
+            <p>
+              Convenience method to add a passed particle, p, to the system.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>addSpring</strong> <code>system.addSpring(s)</code>
+            </p>
+            <p>
+              Convenience method to add a passed spring, s, to the system.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>addAttraction</strong> <code>system.addAttraction(a)</code>
+            </p>
+            <p>
+              Convenience method to add a passed attractions, a, to the system.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>makeParticle</strong> <code>system.makeParticle(m, x, y)</code>
+            </p>
+            <p>
+              Returns a created particle with mass, m, and positions x, y. This also adds the particle to the system.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>makeSpring</strong> <code>system.makeSpring(a, b, k, d, l)</code>
+            </p>
+            <p>
+              Returns a created spring which is added to the system. The spring has rest length, l, drag, d, strength, k, and acts between particle a and particle b.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>makeAttraction</strong> <code>system.makeAttraction(a, b, k, d)</code>
+            </p>
+            <p>
+              Returns a created attraction between vectors a and b with strength, k, and drag, d. This method also adds the attraction to the system.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>clear</strong> <code>system.clear()</code>
+            </p>
+            <p>
+              Removes all particles, springs, and attractions from the system.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>applyForces</strong> <code>system.applyForces()</code>
+            </p>
+            <p>
+              Calculates and applies forces within the system.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>clearForces</strong> <code>system.clearForces()</code>
+            </p>
+            <p>
+              Clear all forces attached to all particles in the system.
+            </p>
+          </li>
+        </ul>
+
+        <ul id="particle">
+          <li class="title"><h3>Particle</h3></li>
+          <li class="description">
+            A class that holds the current state of a particle. It's position, velocity, force exerted, etc.. Unless specified methods return the instance for the purpose of chaining.
+          </li>
+          <li>
+            <p class="construction">
+              <strong>construction</strong> <code>var particle = new Physics.Particle([mass])</code>
+            </p>
+            <p>
+
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>position</strong> <code>particle.position</code>
+            </p>
+            <p>
+              A vector representing the x, y position of the particle.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>velocity</strong> <code>particle.velocity</code>
+            </p>
+            <p>
+              A vector representing the x, y velocity of the particle.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>force</strong> <code>particle.force</code>
+            </p>
+            <p>
+              A vector representing the x, y force on the particle.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>mass</strong> <code>particle.mass</code>
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>fixed</strong> <code>particle.fixed</code>
+            </p>
+            <p>
+              A boolean describing whether the particle reacts to forces, springs, and attractions. If it doesn't then it is fixed.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>age</strong> <code>particle.age</code>
+            </p>
+            <p>
+              A number describing the age of the particle.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>dead</strong> <code>particle.dead</code>
+            </p>
+            <p>
+              A boolean describing whether the particle is dead or not. <em>This is not related to inertia</em>.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>distanceTo</strong> <code>particle.distanceTo(p)</code>
+            </p>
+            <p>
+              Returns the distance between two particles.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>makeFixed</strong> <code>particle.makeFixed()</code>
+            </p>
+            <p>
+              Make the particle fixed in two-dimensional space. <em>Clears its velocity, but not forces</em>.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>reset</strong> <code>particle.reset()</code>
+            </p>
+            <p>
+              Sets all properties of the particle to initial values. This is 0 for all values except mass which is 1.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>resting</strong> <code>particle.resting()</code>
+            </p>
+            <p>
+              Returns a boolean describing whether the particle is in movement.
+            </p>
+          </li>
+        </ul>
+
+        <ul id="attraction">
+          <li class="title"><h3>Attraction</h3></li>
+          <li class="description">
+            A class that holds information about the attraction or repulsion between two particles. Unless specified methods return the instance for the purpose of chaining.
+          </li>
+          <li>
+            <p class="construction">
+              <strong>construction</strong> <code>var attraction = new Physics.Attraction(a, b, k d)</code>
+            </p>
+            <p>
+
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>a</strong> <code>attraction.a</code>
+            </p>
+            <p>
+              A reference to a particle, a.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>b</strong> <code>attraction.b</code>
+            </p>
+            <p>
+              A reference to a particle, b.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>constant</strong> <code>attraction.constant</code>
+            </p>
+            <p>
+              The strength of the attraction. If constant &lt; 0 then the attraction is considered a repulsion.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>on</strong> <code>attraction.on</code>
+            </p>
+            <p>
+              A boolean that describes whether the attraction is enabled within the system.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>distanceMin</strong> <code>attraction.distanceMin</code>
+            </p>
+            <p>
+              The minimum distance, radial threshold, before the two particles begin attract.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>distanceMinSquared</strong> <code>attraction.distanceMinSquared</code>
+            </p>
+            <p>
+              The minimum distance squared. Used mainly as a pre-calculated value for faster ParticleSystem calculations.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>update</strong> <code>attraction.update()</code>
+            </p>
+            <p>
+              Updates the referenced particles forces on each other.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>resting</strong> <code>attraction.resting()</code>
+            </p>
+            <p>
+              Returns a boolean describing whether the attraction is inert or not.
+            </p>
+          </li>
+        </ul>
+
+        <ul id="spring">
+          <li class="title"><h3>Spring</h3></li>
+          <li class="description">
+            A class that holds information about a spring between two particles. Unless specified methods return the instance for the purpose of chaining.
+          </li>
+          <li>
+            <p class="construction">
+              <strong>construction</strong> <code>var spring = new Physics.Spring();</code>
+            </p>
+            <p>
+
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>a</strong> <code>spring.a</code>
+            </p>
+            <p>
+              A reference to a particle, a.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>b</strong> <code>spring.b</code>
+            </p>
+            <p>
+              A reference to a particle, b.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>constant</strong> <code>spring.constant</code>
+            </p>
+            <p>
+              The strength of the attraction between the two particles. If constant &lt; 0 then the attraction is considered a repulsion.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>damping</strong> <code>spring.damping</code>
+            </p>
+            <p>
+              The damping value for velocity calculations.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>on</strong> <code>spring.on</code>
+            </p>
+            <p>
+              A boolean that describes whether the attraction is enabled within the system.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>length</strong> <code>spring.length</code>
+            </p>
+            <p>
+              The acceptable and desired rest length between the two particles.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>currentLength</strong> <code>spring.currentLength()</code>
+            </p>
+            <p>
+              Returns the distance between the two referenced particles in two-dimensional space.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>update</strong> <code>spring.update()</code>
+            </p>
+            <p>
+              Updates the forces of the two referenced particles acting on each other.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>resting</strong> <code>spring.resting()</code>
+            </p>
+            <p>
+              Returns a boolean describing whether the spring is resting or not. Convenient for knowing whether or not the spring needs another update tick.
+            </p>
+          </li>
+        </ul>
+
+        <ul id="integrator">
+          <li class="title"><h3>Integrator</h3></li>
+          <li class="description">
+            A class with iterative methods for the approximation of solutions of ordinary differential equations. This particular integrator is based on the <a href="http://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods">Runge Kutta Methods</a>.
+          </li>
+          <li>
+            <p class="construction">
+              <strong>construction</strong> <code>var integrator = new Physics.Integrator();</code>
+            </p>
+            <p>
+
+            </p>
+          </li>
+        </ul>
+
+        <ul id="vector">
+          <li class="title"><h3>Vector</h3></li>
+          <li class="description">
+            A class that has x, y positions and a number of convenient methods for executing calculations and operations against them. Unless specified methods return the instance for the purpose of chaining.
+          </li>
+          <li>
+            <p class="construction">
+              <strong>construction</strong> <code>var vector = new Physics.Vector([x], [y]);</code>
+            </p>
+            <p>
+              
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>x</strong> <code>vector.x, vector.x = 1.0</code>
+            </p>
+            <p>
+              The x-position of the vector.
+            </p>
+          </li>
+          <li>
+            <p class="property">
+              <strong>y</strong> <code>vector.y, vector.y = 1.0</code>
+            </p>
+            <p>
+              The y-position of the vector.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>set</strong> <code>vector.set(x, y)</code>
+              <p>
+                Set the x and y properties of a vector.
+              </p>
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>copy</strong> <code>vector.copy(v)</code>
+            </p>
+            <p>
+              Set the x and y properties of a vector based on another vector, v.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>clear</strong> <code>vector.clear()</code>
+            </p>
+            <p>
+              Set the vector's x and y properties to 0.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>clone</strong> <code>vector.clone()</code>
+            </p>
+            <p>
+              Return a new instance of Vector with the same x and y properties as the one invoking the method.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>add</strong> <code>vector.add(v1, v2)</code>
+            </p>
+            <p>
+              Set the value of x and y properties to the sum of the first vector, v1, and the second, v2.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>addSelf</strong> <code>vector.addSelf(v)</code>
+            </p>
+            <p>
+              Add the passed vector's, v, x and y properties to the vector invoking the method.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>sub</strong> <code>vector.sub(v1, v2)</code>
+            </p>
+            <p>
+              Set the value of x and y properties to the difference between the first vector, v1, and the second, v2.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>subSelf</strong> <code>vector.subSelf(v)</code>
+            </p>
+            <p>
+              Subtract the passed vector's, v, x and y properties to the vector invoking the method.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>multiplySelf</strong> <code>vector.multiplySelf(v)</code>
+            </p>
+            <p>
+              Multiply the passed vector's, v, x and y properties to the vector invoking the method.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>multiplyScalar</strong> <code>vector.multiplyScalar(n)</code>
+            </p>
+            <p>
+              Multiply the passed number, n, to both x and y properties of the vector invoking the method.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>divideScalar</strong> <code>vector.divideScalar(n)</code>
+            </p>
+            <p>
+              Divide the passed number, n, to both x and y properties of the vector invoking the method.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>negate</strong> <code>vector.negate()</code>
+            </p>
+            <p>
+              Used to invert a vector, effectively calling <code>vector.multiplyScalar(-1)</code>.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>dot</strong> <code>vector.dot(v)</code>
+            </p>
+            <p>
+              Returns the dot product of the vector with the passed vector v.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>lengthSquared</strong> <code>vector.lengthSquared()</code>
+            </p>
+            <p>
+              Returns the length of the vectored squared.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>length</strong> <code>vector.length()</code>
+            </p>
+            <p>
+              Returns the length of the vector.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>normalize</strong> <code>vector.normalize()</code>
+            </p>
+            <p>
+              Returns the <a href="http://en.wikipedia.org/wiki/Unit_vector">unit vector</a> of the vector invoking the method.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>distanceTo</strong> <code>vector.distanceTo(v)</code>
+            </p>
+            <p>
+              Returns the distance between the vector and the passed vector, v.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>distanceToSquared</strong> <code>vector.distanceToSquared</code>
+            </p>
+            <p>
+              Return the distance between the two vector's squared.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>setLength</strong> <code>vector.setLength(n)</code>
+            </p>
+            <p>
+              Normalizes the vector and then multiplies the vector's x and y properties by the amount, n.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>equals</strong> <code>vector.equals(v)</code>
+            </p>
+            <p>
+              Returns true if the distance between the two vector's is less than 0.0001 &mdash; almost the same position.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>lerp</strong> <code>vector.lerp(v, t)</code>
+            </p>
+            <p>
+              <a href="http://en.wikipedia.org/wiki/Lerp_(computing)">Linearly interpolate</a> between the vector invoking the method and the passed vector, v, by percentage t. Great for animating.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>isZero</strong> <code>vector.isZero()</code>
+            </p>
+            <p>
+              Returns true if the length of the vector is less than 0.0001 &mdash; almost zero, zero.
+            </p>
+          </li>
+        </ul>
+
         <ul id="common">
           <li class="title"><h3>common</h3></li>
           <li class="description">
             An object that contains utility methods for class inheritance, optimized JavaScript iterating, and definitive property checking. All methods are cherry picked from <a href="#">underscore.js</a>. While
-            the file is common, the exported object is referred to as <code>_</code> because of its lineage.
+            the file is common, the exported object is referred to as <code>_</code> because of its lineage. <em>Warning: this is only accessible if you <strong>are</strong> using the requirified library</em>.
           </li>
           <li>
             <p class="method">
@@ -356,26 +1159,6 @@
           </li>
         </ul>
 
-        <ul id="vector">
-          <li class="title"><h3>Vector</h3></li>
-          <li class="description">
-            A class that has x, y positions and a number of convenient methods for executing calculations and operations against them.
-          </li>
-          <li>
-            <p class="construction">
-              <strong>construction</strong> <code>new Vector([x], [y]);</code>
-            </p>
-            <p>
-
-            </p>
-          </li>
-          <li>
-            <p class="property">
-              <strong>x</strong> <code>vector.x</code>
-            </p>
-          </li>
-        </ul>
-
       </section>
 
       <section id="credits">
@@ -384,11 +1167,36 @@
           Physics is not possible without these great contributions to JavaScript:
         </p>
         <ul>
-          <li><strong><a href="http://requirejs.org/">RequireJS</a></strong></li>
-          <li><strong><a href="http://underscorejs.org/">Underscore.js</a></strong></li>
-          <li><strong><a href="http://github.com/mrdoob/three.js/">Three.js</a></strong></li>
-          <li><strong><a href="http://nodejs.org/">Node.js</a></strong></li>
-          <li><strong><a href="http://workshop.chromeexperiments.com/">dat.GUI</a></strong></li>
+          <li>
+            <strong><a href="http://requirejs.org/">RequireJS</a></strong>
+            <p>
+              Script dependency management in JavaScript.
+            </p>
+          </li>
+          <li>
+            <strong><a href="http://underscorejs.org/">Underscore.js</a></strong>
+            <p>
+              Utility functions.
+            </p>
+          </li>
+          <li>
+            <strong><a href="http://github.com/mrdoob/three.js/">Three.js</a></strong>
+            <p>
+              Default Vector class.
+            </p>
+          </li>
+          <li>
+            <strong><a href="http://nodejs.org/">Node.js</a></strong>
+            <p>
+              Build procedures.
+            </p>
+          </li>
+          <li>
+            <strong><a href="http://workshop.chromeexperiments.com/">dat.GUI</a></strong>
+            <p>
+              Build procedures.
+            </p>
+          </li>
         </ul>
       </section>
 
