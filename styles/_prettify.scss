@@ -1,0 +1,65 @@
+@import 'bourbon/bourbon';
+@import 'shared';
+
+$black: #000;
+$white: #efefef;
+
+$bg_color: $white;
+$text_color: $black;
+$border_color: rgba(0,0,0,0.125);
+
+// Secondary Colors
+
+$yellow: rgb(178, 138, 9);
+$dark_yellow: rgb(72, 44, 0);
+
+$violet: rgb(242, 25, 255);
+$dark_violet: rgb(72, 13, 127);
+
+$green: rgb(0, 255, 200);
+$dark_green: rgb(10, 100, 80);
+
+$blue: rgb(20, 144, 204);
+$dark_blue: rgb(14, 100, 140);
+
+code, pre {
+  font-family: 'lekton', monospace;
+}
+pre {
+  font-size: $font_size;
+  color: $text_color;
+  margin: $margin * 2 0;
+  display: block;
+  background-color: shade($bg_color, 7%);
+//  text-shadow: 1px 1px rgba(0,0,0,0.2);
+}
+pre .nocode { background-color: none; color: #000; }
+pre .str { color: $dark_green; }
+pre .kwd { color: $dark_violet; }
+pre .com { color: tint($text_color, 25%); font-style: italic; }
+pre .typ { color: $dark_green; }
+pre .lit { color: $dark_blue; }
+pre .pun { color: $text_color; }
+pre .pln { color: $text_color; }
+pre .tag { color: $dark_green; }
+pre .atn { color: $dark_violet; }
+pre .atv { color: $green; }
+pre .dec { color: $green; }
+
+/* Specify class=linenums on a pre to get line numbering */
+ol.linenums {
+  margin: 0;
+  color: shade($bg_color, 25%);
+}
+li.L0,li.L1,li.L2,li.L3,li.L4,li.L5,li.L6,li.L7,li.L8,li.L9 {
+  list-style-type: decimal;
+  padding: 0 $font_size / 2;
+  width: 560px;  // Width of an M * 80, the common spacing of an IDE / lint
+  border-right: 1px solid $bg_color;
+  background-color: shade($bg_color, 5%);
+  overflow: visible;
+}
+/* Alternate shading for lines */
+li.L1,li.L3,li.L5,li.L7,li.L9 {
+  background: shade($bg_color, 4%);
+}

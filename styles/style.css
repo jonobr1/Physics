@@ -2,6 +2,75 @@
  * Styling the index page requires bourbon
  * http://thoughtbot.com/bourbon/
  */
+/**
+ * Styling the index page requires bourbon
+ * http://thoughtbot.com/bourbon/
+ */
+code, pre {
+  font-family: 'lekton', monospace; }
+
+pre {
+  font-size: 14px;
+  color: black;
+  margin: 24px 0;
+  display: block;
+  background-color: #dedede; }
+
+pre .nocode {
+  background-color: none;
+  color: #000; }
+
+pre .str {
+  color: #0a6450; }
+
+pre .kwd {
+  color: #480d7f; }
+
+pre .com {
+  color: #3f3f3f;
+  font-style: italic; }
+
+pre .typ {
+  color: #0a6450; }
+
+pre .lit {
+  color: #0e648c; }
+
+pre .pun {
+  color: black; }
+
+pre .pln {
+  color: black; }
+
+pre .tag {
+  color: #0a6450; }
+
+pre .atn {
+  color: #480d7f; }
+
+pre .atv {
+  color: #00ffc8; }
+
+pre .dec {
+  color: #00ffc8; }
+
+/* Specify class=linenums on a pre to get line numbering */
+ol.linenums {
+  margin: 0;
+  color: #b3b3b3; }
+
+li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9 {
+  list-style-type: decimal;
+  padding: 0 7px;
+  width: 560px;
+  border-right: 1px solid #efefef;
+  background-color: #e3e3e3;
+  overflow: visible; }
+
+/* Alternate shading for lines */
+li.L1, li.L3, li.L5, li.L7, li.L9 {
+  background: #e5e5e5; }
+
 * {
   margin: 0;
   padding: 0; }
@@ -94,4 +163,4 @@ canvas {
 ::selection,
 ::-moz-selection,
 ::-webkit-selection {
-  background: #ffa000; }
+  background: rgba(255, 160, 0, 0.66); }

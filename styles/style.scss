@@ -1,13 +1,6 @@
-/**
- * Styling the index page requires bourbon
- * http://thoughtbot.com/bourbon/
- */
 @import 'bourbon/bourbon';
-
-$font-size: 14px;
-$line-height: 20px;
-$font-color: #333;
-$highlight: #fff;
+@import 'shared';
+@import 'prettify';
 
 * {
   margin: 0;
@@ -153,5 +146,5 @@ canvas {
 ::selection,
 ::-moz-selection,
 ::-webkit-selection {
-  background: rgb(255, 160, 0);
+  background: rgba(255, 160, 0, 0.66);
 }
