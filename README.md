@@ -1,4 +1,4 @@
 Physics
 =======
 
-A requirified port of Traer Physics from Processing to JavaScript.
+See the [project page](http://jonobr1.github.com/Physics) for most up-to-date information.
