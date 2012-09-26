@@ -34,31 +34,6 @@ a {
   }
 }
 
-#toc {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 185px - $line-height * 3;
-  padding: $line-height * 2 $line-height;
-  border-right: 1px solid $highlight;
-}
-
-#content {
-  position: absolute;
-  top: 0;
-  left: 185px;
-  width: 600px;
-  padding: $line-height * 2 0;
-  border-left: 1px solid $highlight;
-  & > * {
-    padding-left: $line-height;
-  }
-  p.method, p.property, p.constructor {
-    margin-bottom: 0;
-  }
-}
-
 #content, #toc {
 
    section {
@@ -69,7 +44,7 @@ a {
       display: block;
       content: "";
       height: 0;
-      width: 125%;
+      width: 100%;
       margin: $line-height 0 $line-height -$line-height;
       padding: 0;
       border-bottom: 1px solid $highlight;
@@ -100,13 +75,57 @@ a {
     }
   }
 
-  code {
+  code,
+  pre {
     font-family: 'Lekton', monospace;
-    @include border-radius(3px);
+//    @include border-radius(3px);
     // padding: 2px 3px;
     // background: $highlight;
   }
 
+  pre {
+    padding: 0 $line-height;
+    background: rgba(255, 255, 255, 0.3);
+    width: 600 - $line-height * 3;
+  }
+
+}
+
+#toc {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 185px - $line-height * 3;
+  padding: $line-height * 2 $line-height;
+  border-right: 1px solid $highlight;
+
+  li ul {
+
+    margin: $line-height / 2 0;
+    padding: 0 0 0 $line-height / 2;
+
+    li {
+      margin-bottom: 0 !important;
+    }
+
+  }
+
+}
+
+#content {
+  position: absolute;
+  top: 0;
+  left: 185px;
+  width: 600px;
+  padding: $line-height * 2 0;
+  border-left: 1px solid $highlight;
+  & > * {
+    padding-left: $line-height;
+  }
+  p.method, p.property, p.constructor {
+    margin-bottom: 0;
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -131,6 +150,8 @@ canvas {
   cursor: pointer;
 }
 
-h1 {
-
+::selection,
+::-moz-selection,
+::-webkit-selection {
+  background: rgb(255, 160, 0);
 }

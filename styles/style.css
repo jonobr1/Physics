@@ -19,27 +19,6 @@ a:link, a:visited {
 a:hover, a:active {
   text-decoration: none; }
 
-#toc {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 125px;
-  padding: 40px 20px;
-  border-right: 1px solid white; }
-
-#content {
-  position: absolute;
-  top: 0;
-  left: 185px;
-  width: 600px;
-  padding: 40px 0;
-  border-left: 1px solid white; }
-  #content > * {
-    padding-left: 20px; }
-  #content p.method, #content p.property, #content p.constructor {
-    margin-bottom: 0; }
-
 #content section, #toc section {
   margin-bottom: 20px; }
   #content section:after, #toc section:after {
@@ -47,7 +26,7 @@ a:hover, a:active {
     display: block;
     content: "";
     height: 0;
-    width: 125%;
+    width: 100%;
     margin: 20px 0 0px;
     padding: 0;
     border-bottom: 1px solid white; }
@@ -61,10 +40,39 @@ a:hover, a:active {
   margin-bottom: 20px; }
 #content #documentation dt, #toc #documentation dt {
   font-weight: bold; }
-#content code, #toc code {
-  font-family: 'Lekton', monospace;
-  -webkit-border-radius: 3px;
-  border-radius: 3px; }
+#content code,
+#content pre, #toc code, #toc pre {
+  font-family: 'Lekton', monospace; }
+#content pre, #toc pre {
+  padding: 0 20px;
+  background: rgba(255, 255, 255, 0.3);
+  width: 540px; }
+
+#toc {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 125px;
+  padding: 40px 20px;
+  border-right: 1px solid white; }
+  #toc li ul {
+    margin: 10px 0;
+    padding: 0 0 0 10px; }
+    #toc li ul li {
+      margin-bottom: 0 !important; }
+
+#content {
+  position: absolute;
+  top: 0;
+  left: 185px;
+  width: 600px;
+  padding: 40px 0;
+  border-left: 1px solid white; }
+  #content > * {
+    padding-left: 20px; }
+  #content p.method, #content p.property, #content p.constructor {
+    margin-bottom: 0; }
 
 h1, h2, h3, h4, h5, h6 {
   margin-bottom: 20px; }
@@ -82,3 +90,8 @@ canvas {
   display: block;
   margin: 0 auto;
   cursor: pointer; }
+
+::selection,
+::-moz-selection,
+::-webkit-selection {
+  background: #ffa000; }
