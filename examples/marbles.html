@@ -18,52 +18,64 @@
           canvas: document.getElementById('splash'),
           antialias: true
         });
+        var width = renderer.domElement.width;
+        var height = renderer.domElement.height;
 
         var scene = new THREE.Scene();
-        var camera = new THREE.OrthographicCamera(0, renderer.domElement.width, 0, renderer.domElement.height, -10000);
+        var camera = new THREE.OrthographicCamera(0, width, 0, height, -10000);
+        var light = new THREE.SpotLight(0xffffff, 3, 0, Math.PI, 10);
+
+        light.position.set(width / 2, height / 2, -250);
+        light.target.position.set(width / 2, height / 2, 0);
+
         var spheres = [];
 
         scene.add(camera);
+        scene.add(light);
 
         // Physics related constants
 
         var amount = 50;
-        var mass = 1, radius = 50, strength = 1000000,
-          restLength = radius, repulsion = 500, threshold = radius;
-        var physics = new Physics(mass);
+        var mass = 0.2, radius = 50, strength = 1000000,
+          restLength = radius, repulsion = 1000, threshold = 0;
+
+        var physics = new Physics(10);
+        var anchor = physics.makeParticle(mass, width / 2, height / 2);
+        anchor.makeFixed();
 
         for (var i = 0; i < amount; i++) {
 
-          var x1 = renderer.domElement.width / 2;
-          var y1 = renderer.domElement.height / 2;
+          var pct = (i + 1) / amount;
+          var x2 = pct * width;
+          var y2 = Math.random() * height;
 
-          var x2 = Math.random() * renderer.domElement.width;
-          var y2 = Math.random() * renderer.domElement.height;
+          // Create a Physics.Particle and Physics.Attraction to the center.
 
-          var anchor = physics.makeParticle(mass, x1, y1);
           var particle = physics.makeParticle(mass, x2, y2);
+          var attraction = physics.makeAttraction(anchor, particle, strength, width);
 
-          anchor.makeFixed();
-          var attraction = physics.makeAttraction(anchor, particle, strength, renderer.domElement.width);
+          // Create a custom texture / pattern for the marble
 
-        var texture = new THREE.Texture(getPattern());
-        texture.needsUpdate = true;
-        texture.anistropy = 16;
+          var texture = new THREE.Texture(getPattern());
+          texture.needsUpdate = true;
+          texture.anistropy = 16;
+
+          // Create the geometry and material for the mesh.
 
           var geometry = new THREE.SphereGeometry(radius, 32, 32);
-          var material = new THREE.MeshBasicMaterial({
-            color: 0xffffff,
+          var material = new THREE.MeshPhongMaterial({
+            transparent: true,
+            shininess: 50,
+            shading: THREE.SmoothShading,
             map: texture
           });
 
+          // Create a mesh and add it to our scene
           var mesh = new THREE.Mesh(geometry, material);
-          mesh.position.z = i * 100;  // Inhabit different z-depths
-
           scene.add(mesh);
 
           spheres.push({
             particle: particle,
-            anchor: anchor,
             geometry: geometry,
             material: material,
             mesh: mesh
@@ -91,11 +103,10 @@
 
         }
 
-        renderer.setSize(renderer.domElement.width, renderer.domElement.height);
+        // Set the size of the renderer, same as our canvas.
+        renderer.setSize(width, height);
 
         // This is like our draw loop
-        var framecount = 0;
-
         physics.onUpdate(function() {
 
           for (var i = 0, l = spheres.length; i < l; i++) {
@@ -106,19 +117,20 @@
             var particle = sphere.particle;
             var mesh = sphere.mesh;
 
-            var position = mesh.position.clone();
-            var theta = 360 / (Math.PI * 2 * radius);
+            var position = mesh.position.clone(); // Store the previous position
+            var theta = 360 / (Math.PI * 2 * radius); // Convert distance to revolutions
 
+            // Set the new position of the marble
             mesh.position.x = particle.position.x;
             mesh.position.y = particle.position.y;
 
+            // Calculate the spin of the marble
             mesh.rotation.x += theta * (particle.position.y - position.y) / 60;
             mesh.rotation.z += theta * (particle.position.x - position.x) / 60;
 
           }
 
-          framecount++;
-
+          // Render the scene and camera
           renderer.render(scene, camera);
 
         });
