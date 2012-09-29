@@ -35,8 +35,8 @@
 
         // Physics related constants
 
-        var amount = 50;
-        var mass = 0.2, radius = 50, strength = 1000000,
+        var amount = 5;
+        var mass = 1, radius = 50, strength = 100000,
           restLength = radius, repulsion = 1000, threshold = 0;
 
         var physics = new Physics(10);
@@ -83,26 +83,6 @@
 
         }
 
-        // Add repulsion between each particle and all other particles
-
-        for (var i = 0, l = spheres.length; i < l; i++) {
-
-          var a = spheres[i];
-
-          for (var j = 0; j < l; j++) {
-
-            if (j == i) {
-              continue;
-            }
-
-            var b = spheres[j];
-
-            physics.makeAttraction(a.particle, b.particle, - repulsion, threshold);
-
-          }
-
-        }
-
         // Set the size of the renderer, same as our canvas.
         renderer.setSize(width, height);
 
@@ -119,6 +99,26 @@
 
             var position = mesh.position.clone(); // Store the previous position
             var theta = 360 / (Math.PI * 2 * radius); // Convert distance to revolutions
+
+            for (var j = i; j < l; j++) {
+
+              if (j == i) {
+                continue;
+              }
+
+              var a = particle;
+              var b = spheres[j].particle;
+              var d = a.distanceTo(b);
+
+              // Collision
+
+              if (d < radius * 2) {
+                var v = a.velocity.clone();
+                a.velocity.copy(b.velocity);
+                b.velocity.copy(v);
+              }
+
+            }
 
             // Set the new position of the marble
             mesh.position.x = particle.position.x;
