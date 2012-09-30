@@ -36,23 +36,31 @@
         // Physics related constants
 
         var amount = 5;
-        var mass = 1, radius = 50, strength = 100000,
+        var mass = 1, radius = 75, strength = 100000,
           restLength = radius, repulsion = 1000, threshold = 0;
 
         var physics = new Physics(10);
         var anchor = physics.makeParticle(mass, width / 2, height / 2);
         anchor.makeFixed();
 
+        // Placement variables
+        var columns = 5;
+
         for (var i = 0; i < amount; i++) {
 
           var pct = (i + 1) / amount;
-          var x2 = pct * width;
+          var offset = pct * width * columns;
+          var x2 = Math.random() * width;
           var y2 = Math.random() * height;
+          // var x2 = offset % width;
+          // var y2 = Math.floor(offset / width) * height;
 
           // Create a Physics.Particle and Physics.Attraction to the center.
 
           var particle = physics.makeParticle(mass, x2, y2);
           var attraction = physics.makeAttraction(anchor, particle, strength, width);
+
+          particle.attraction = attraction; // Keep track of the attraction
 
           // Create a custom texture / pattern for the marble
 
@@ -74,6 +82,7 @@
           var mesh = new THREE.Mesh(geometry, material);
           scene.add(mesh);
 
+          // Expose a sphere object for accessing during render loop.
           spheres.push({
             particle: particle,
             geometry: geometry,
@@ -110,9 +119,10 @@
               var b = spheres[j].particle;
               var d = a.distanceTo(b);
 
-              // Collision
+              // Collision for same mass particles
+              // http://en.wikipedia.org/wiki/Elastic_collision
 
-              if (d < radius * 2) {
+              if (d <= radius * 2) {
                 var v = a.velocity.clone();
                 a.velocity.copy(b.velocity);
                 b.velocity.copy(v);
@@ -124,7 +134,7 @@
             mesh.position.x = particle.position.x;
             mesh.position.y = particle.position.y;
 
-            // Calculate the spin of the marble
+            // Calculate the "spin" of the marble
             mesh.rotation.x += theta * (particle.position.y - position.y) / 60;
             mesh.rotation.z += theta * (particle.position.x - position.x) / 60;
 
