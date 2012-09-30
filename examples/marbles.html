@@ -5,12 +5,14 @@
     <link rel="stylesheet" media="screen" href="../styles/style.css" />
   </head>
   <body class="marbles">
-    <canvas id="splash" width="800" height="600"></canvas>
+    <canvas id="splash" width="1000" height="600"></canvas>
     <script type="text/javascript" src="https://raw.github.com/mrdoob/three.js/master/build/three.min.js"></script>
     <script type="text/javascript" src="../build/physics.js"></script>
     <script type="text/javascript">
 
       (function() {
+
+        var second = 0;
 
         // Three.js variables, i.e: Rendering variables
 
@@ -23,7 +25,7 @@
 
         var scene = new THREE.Scene();
         var camera = new THREE.OrthographicCamera(0, width, 0, height, -10000);
-        var light = new THREE.SpotLight(0xffffff, 3, 0, Math.PI, 10);
+        var light = new THREE.SpotLight(0xffffff, 10, 0, Math.PI, 10);
 
         light.position.set(width / 2, height / 2, -250);
         light.target.position.set(width / 2, height / 2, 0);
@@ -35,61 +37,15 @@
 
         // Physics related constants
 
-        var amount = 5;
-        var mass = 1, radius = 75, strength = 100000,
-          restLength = radius, repulsion = 1000, threshold = 0;
+        var amount = 50;
+        var mass = 1, radius = 50, strength = 100000, diameter = radius * 2;
 
         var physics = new Physics(10);
         var anchor = physics.makeParticle(mass, width / 2, height / 2);
         anchor.makeFixed();
 
-        // Placement variables
-        var columns = 5;
-
         for (var i = 0; i < amount; i++) {
-
-          var pct = (i + 1) / amount;
-          var offset = pct * width * columns;
-          var x2 = Math.random() * width;
-          var y2 = Math.random() * height;
-          // var x2 = offset % width;
-          // var y2 = Math.floor(offset / width) * height;
-
-          // Create a Physics.Particle and Physics.Attraction to the center.
-
-          var particle = physics.makeParticle(mass, x2, y2);
-          var attraction = physics.makeAttraction(anchor, particle, strength, width);
-
-          particle.attraction = attraction; // Keep track of the attraction
-
-          // Create a custom texture / pattern for the marble
-
-          var texture = new THREE.Texture(getPattern());
-          texture.needsUpdate = true;
-          texture.anistropy = 16;
-
-          // Create the geometry and material for the mesh.
-
-          var geometry = new THREE.SphereGeometry(radius, 32, 32);
-          var material = new THREE.MeshPhongMaterial({
-            transparent: true,
-            shininess: 50,
-            shading: THREE.SmoothShading,
-            map: texture
-          });
-
-          // Create a mesh and add it to our scene
-          var mesh = new THREE.Mesh(geometry, material);
-          scene.add(mesh);
-
-          // Expose a sphere object for accessing during render loop.
-          spheres.push({
-            particle: particle,
-            geometry: geometry,
-            material: material,
-            mesh: mesh
-          });
-
+          addSphere();
         }
 
         // Set the size of the renderer, same as our canvas.
@@ -107,7 +63,7 @@
             var mesh = sphere.mesh;
 
             var position = mesh.position.clone(); // Store the previous position
-            var theta = 360 / (Math.PI * 2 * radius); // Convert distance to revolutions
+            var theta = 360 / (Math.PI * diameter); // Convert distance to revolutions
 
             for (var j = i; j < l; j++) {
 
@@ -122,10 +78,30 @@
               // Collision for same mass particles
               // http://en.wikipedia.org/wiki/Elastic_collision
 
-              if (d <= radius * 2) {
+              if (d <= diameter) {
+
                 var v = a.velocity.clone();
-                a.velocity.copy(b.velocity);
-                b.velocity.copy(v);
+                a.velocity.copy(b.velocity).multiplyScalar(0.9);
+                b.velocity.copy(v).multiplyScalar(0.9);
+
+                if (d < diameter) {
+
+                  // Force particles to be tangential.
+                  // i.e: No sphere is ever within another sphere.
+
+                  var makeup = (diameter - d) / 2;
+                  var angle = Math.atan2(b.position.y - a.position.y, b.position.x - a.position.x);
+
+                  b.position.x += makeup * Math.cos(angle);
+                  b.position.y += makeup * Math.sin(angle);
+
+                  angle += Math.PI;
+
+                  a.position.x += makeup * Math.cos(angle);
+                  a.position.y += makeup * Math.sin(angle);
+
+                }
+
               }
 
             }
@@ -146,8 +122,46 @@
         });
 
         // Let's kick off the calculations right away!
-
         physics.update();
+
+        function addSphere() {
+
+          var x = Math.random() * width * 4 - width;
+          var y = Math.random() * height * 4 - height;
+
+          // Create a Physics.Particle and Physics.Attraction to the center.
+          var particle = physics.makeParticle(mass, x, y);
+          var attraction = physics.makeAttraction(anchor, particle, strength, width);
+
+          // Create a custom texture / pattern for the marble
+          var texture = new THREE.Texture(getPattern());
+          texture.needsUpdate = true;
+          texture.anisotropy = renderer.getMaxAnisotropy();
+
+          // Create the geometry and material for the mesh.
+
+          var geometry = new THREE.SphereGeometry(radius, 32, 32);
+          var material = new THREE.MeshPhongMaterial({
+            transparent: true,
+            shininess: 50,
+            shading: THREE.SmoothShading,
+            map: texture
+          });
+
+          // Create a mesh and add it to our scene
+          var mesh = new THREE.Mesh(geometry, material);
+          scene.add(mesh);
+
+          // Expose a sphere object for accessing during render loop.
+          spheres.push({
+            attraction: attraction,
+            particle: particle,
+            geometry: geometry,
+            material: material,
+            mesh: mesh
+          });
+
+        }
 
         /**
          * Make various stripe patterns in canvas 2d.
