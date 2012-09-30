@@ -12,8 +12,6 @@
 
       (function() {
 
-        var second = 0;
-
         // Three.js variables, i.e: Rendering variables
 
         var renderer = new THREE.WebGLRenderer({
@@ -22,13 +20,14 @@
         });
         var width = renderer.domElement.width;
         var height = renderer.domElement.height;
+        var center = new Physics.Vector(width / 2, height / 2);
 
         var scene = new THREE.Scene();
         var camera = new THREE.OrthographicCamera(0, width, 0, height, -10000);
         var light = new THREE.SpotLight(0xffffff, 10, 0, Math.PI, 10);
 
-        light.position.set(width / 2, height / 2, -250);
-        light.target.position.set(width / 2, height / 2, 0);
+        light.position.set(center.x, center.y, -250);
+        light.target.position.set(center.x, center.y, 0);
 
         var spheres = [];
 
@@ -41,8 +40,32 @@
         var mass = 1, radius = 50, strength = 100000, diameter = radius * 2;
 
         var physics = new Physics(10);
-        var anchor = physics.makeParticle(mass, width / 2, height / 2);
+
+        // Create the fixed point light / anchor that is selectable,
+        // we'll call it a beacon.
+
+        var anchor = physics.makeParticle(mass, center.x, center.y);
         anchor.makeFixed();
+
+        var beacon = {
+          color: 0xff0000,
+          particle: anchor
+        };
+        beacon.maxIntensity = 10;
+        beacon.light = new THREE.PointLight(beacon.color, beacon.maxIntensity, radius * 4);
+        beacon.mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 32), new THREE.MeshPhongMaterial({
+          transparent: true,
+          shininess: 0,
+          color: beacon.color,
+          shading: THREE.SmoothShading
+        }));
+
+        // Add to scene and spheres.
+        scene.add(beacon.light);
+        scene.add(beacon.mesh);
+        spheres.push(beacon);
+
+        // Create all other marbles.
 
         for (var i = 0; i < amount; i++) {
           addSphere();
@@ -114,6 +137,14 @@
             mesh.rotation.x += theta * (particle.position.y - position.y) / 60;
             mesh.rotation.z += theta * (particle.position.x - position.x) / 60;
 
+            if (sphere.light) {
+
+              var normal = sphere.particle.position.distanceTo(center) / height / 2;
+              sphere.light.position.set(particle.position.x, particle.position.y, 0);
+              sphere.light.intensity =  Math.max((1 - normal) * sphere.maxIntensity, 0);
+
+            }
+
           }
 
           // Render the scene and camera
@@ -143,7 +174,7 @@
           var geometry = new THREE.SphereGeometry(radius, 32, 32);
           var material = new THREE.MeshPhongMaterial({
             transparent: true,
-            shininess: 50,
+            shininess: 0,
             shading: THREE.SmoothShading,
             map: texture
           });
@@ -154,7 +185,6 @@
 
           // Expose a sphere object for accessing during render loop.
           spheres.push({
-            attraction: attraction,
             particle: particle,
             geometry: geometry,
             material: material,
