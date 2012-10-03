@@ -25,7 +25,7 @@
         var scene = new THREE.Scene();
         var camera = new THREE.OrthographicCamera(0, width, 0, height, -10000);
 
-        var reflection = new THREE.CubeCamera(-10000, 10000, 256);
+        var reflection = new THREE.CubeCamera(1, 1000, 256);
         reflection.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
 
         var light = new THREE.SpotLight(0xffffff, 10, 0, Math.PI, 10);
@@ -57,17 +57,27 @@
         };
         beacon.maxIntensity = 10;
         beacon.light = new THREE.PointLight(beacon.color, beacon.maxIntensity, radius * 4);
-        beacon.mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 32), new THREE.MeshPhongMaterial({
+
+        // The innards of the beacon.
+        beacon.mesh = new THREE.Mesh(new THREE.SphereGeometry(radius - 2, 32, 32), new THREE.MeshPhongMaterial({
           transparent: true,
+          blending: THREE.AdditiveBlending,
           shininess: 0,
           color: beacon.color,
           shading: THREE.SmoothShading,
-          // envMap: reflection.renderTarget
+        }));
+
+        // The outer shell.
+        beacon.reflection = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 32), new THREE.MeshBasicMaterial({
+          opacity: 0.75,
+          blending: THREE.AdditiveBlending,
+          envMap: reflection.renderTarget
         }));
 
         // Add to scene and spheres.
         scene.add(beacon.light);
         scene.add(beacon.mesh);
+        scene.add(beacon.reflection);
         spheres.push(beacon);
 
         // Create all other marbles.
@@ -109,8 +119,8 @@
               if (d <= diameter) {
 
                 var v = a.velocity.clone();
-                a.velocity.copy(b.velocity).multiplyScalar(0.9);
-                b.velocity.copy(v).multiplyScalar(0.9);
+                a.velocity.copy(b.velocity).multiplyScalar(0.66);
+                b.velocity.copy(v).multiplyScalar(0.66);
 
                 if (d < diameter) {
 
@@ -152,9 +162,23 @@
 
           }
 
-          // beacon.mesh.visible = false;
+          beacon.mesh.visible = false;
+          beacon.reflection.visible = false;
+
+          beacon.reflection.position.copy(beacon.mesh.position);
+          // beacon.reflection.rotation.copy(beacon.mesh.rotation);
+
+          reflection.position.copy(beacon.mesh.position);
+          // reflection.rotation.copy(beacon.mesh.rotation);
+
+          // reflection.rotation.x += Math.PI / 2;
+          // reflection.rotation.y += Math.PI / 2;
+          // reflection.rotation.z += Math.PI / 2;
+
           reflection.updateCubeMap(renderer, scene);
-          // beacon.mesh.visible = true;
+
+          beacon.mesh.visible = true;
+          beacon.reflection.visible = true;
 
           // Render the scene and camera
           renderer.render(scene, camera);
