@@ -142,7 +142,7 @@ a:hover, a:active {
   border-left: 1px solid white; }
   #content > * {
     padding-left: 20px; }
-  #content p.method, #content p.property, #content p.constructor {
+  #content p.method, #content p.property, #content p.constructor, #content p.example {
     margin-bottom: 0; }
 
 h1, h2, h3, h4, h5, h6 {
