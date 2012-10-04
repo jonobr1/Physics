@@ -40,8 +40,11 @@
 
         // Physics related constants
 
-        var amount = 50;
-        var mass = 1, radius = 50, strength = 100000, diameter = radius * 2;
+        var amount = 50,  // How many marbles are there?
+          mass = 1, // What's the mass of each marble?
+          radius = 50, // What's the radius of each marble?
+          strength = 100000, // What's the strength of the attraction between each marble and the beacon?
+          diameter = radius * 2; // Save the diameter for distance checking later.
 
         var physics = new Physics(10);
 
@@ -55,11 +58,12 @@
           color: 0xff0000,
           particle: anchor
         };
-        beacon.maxIntensity = 10;
+        beacon.maxIntensity = 5;
         beacon.light = new THREE.PointLight(beacon.color, beacon.maxIntensity, radius * 4);
 
         // The innards of the beacon.
-        beacon.mesh = new THREE.Mesh(new THREE.SphereGeometry(radius - 2, 32, 32), new THREE.MeshPhongMaterial({
+        // We need to make sure it doesn't inhabit the same surface is the reflection.
+        beacon.mesh = new THREE.Mesh(new THREE.SphereGeometry(radius - 1, 32, 32), new THREE.MeshPhongMaterial({
           transparent: true,
           blending: THREE.AdditiveBlending,
           shininess: 0,
@@ -74,6 +78,8 @@
           envMap: reflection.renderTarget
         }));
 
+        beacon.radius = radius;
+
         // Add to scene and spheres.
         scene.add(beacon.light);
         scene.add(beacon.mesh);
@@ -81,7 +87,6 @@
         spheres.push(beacon);
 
         // Create all other marbles.
-
         for (var i = 0; i < amount; i++) {
           addSphere();
         }
@@ -152,31 +157,35 @@
             mesh.rotation.x += theta * (particle.position.y - position.y) / 60;
             mesh.rotation.z += theta * (particle.position.x - position.x) / 60;
 
+            // If this is the beacon update the position of the light and the
+            // intensity based on how close it is from the center, aka the
+            // point light.
             if (sphere.light) {
 
-              var normal = sphere.particle.position.distanceTo(center) / height / 2;
+              var normal = sphere.particle.position.distanceTo(center) / (height / 2);
               sphere.light.position.set(particle.position.x, particle.position.y, 0);
-              sphere.light.intensity =  Math.max((1 - normal) * sphere.maxIntensity, 0);
+              var clamp = Math.max(Math.min(1, 1 - normal), 0);
+              sphere.light.intensity =  clamp * sphere.maxIntensity;
 
             }
 
           }
 
+          // Update the beacon's environment map.
+          // http://en.wikipedia.org/wiki/Reflection_mapping
+
+          // Let's make sure the map doesn't include the beacon itself.
           beacon.mesh.visible = false;
           beacon.reflection.visible = false;
 
+          // Make sure the reflection is in the right place.
           beacon.reflection.position.copy(beacon.mesh.position);
-          // beacon.reflection.rotation.copy(beacon.mesh.rotation);
-
           reflection.position.copy(beacon.mesh.position);
-          // reflection.rotation.copy(beacon.mesh.rotation);
 
-          // reflection.rotation.x += Math.PI / 2;
-          // reflection.rotation.y += Math.PI / 2;
-          // reflection.rotation.z += Math.PI / 2;
-
+          // Take a snapshot from the perspective of the beacon.
           reflection.updateCubeMap(renderer, scene);
 
+          // Enable the beacon again so the viewer can see.
           beacon.mesh.visible = true;
           beacon.reflection.visible = true;
 
@@ -187,6 +196,23 @@
 
         // Let's kick off the calculations right away!
         physics.update();
+
+        // Let's also add a mouse event bound to the beacon's location.
+        var has = !!window.addEventListener;
+        if (has) {
+          window.addEventListener('mousemove', onWindowMouseMove);
+        } else {
+          window.attachEvent('onmousemove', onWindowMouseMove);
+        }
+
+        function onWindowMouseMove(e) {
+
+          var x = e.clientX - renderer.domElement.getBoundingClientRect().left;
+          var y = e.clientY;
+
+          beacon.particle.position.set(x, y);
+
+        }
 
         function addSphere() {
 
@@ -209,8 +235,7 @@
             transparent: true,
             shininess: 0,
             shading: THREE.SmoothShading,
-            map: texture,
-            // envMap: reflection.renderTarget
+            map: texture
           });
 
           // Create a mesh and add it to our scene
@@ -222,7 +247,8 @@
             particle: particle,
             geometry: geometry,
             material: material,
-            mesh: mesh
+            mesh: mesh,
+            radius: radius
           });
 
         }
