@@ -40,7 +40,7 @@
 
         // Physics related constants
 
-        var amount = 50,  // How many marbles are there?
+        var amount = 35,  // How many marbles are there?
           mass = 1, // What's the mass of each marble?
           radius = 50, // What's the radius of each marble?
           strength = 100000, // What's the strength of the attraction between each marble and the beacon?
@@ -124,8 +124,8 @@
               if (d <= diameter) {
 
                 var v = a.velocity.clone();
-                a.velocity.copy(b.velocity).multiplyScalar(0.66);
-                b.velocity.copy(v).multiplyScalar(0.66);
+                a.velocity.copy(b.velocity).multiplyScalar(0.75);
+                b.velocity.copy(v).multiplyScalar(0.75);
 
                 if (d < diameter) {
 
