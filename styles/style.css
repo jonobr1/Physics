@@ -83,7 +83,10 @@ body {
   color: #333333;
   background: #e2dddb; }
   body.marbles {
-    background: #000; }
+    background: #000;
+    cursor: none; }
+    body.marbles * {
+      cursor: none; }
 
 a:link, a:visited {
   color: #333333; }

@@ -16,6 +16,10 @@ body {
   background: #e2dddb;
   &.marbles {
     background: #000;
+    cursor: none;
+    * {
+      cursor: none;
+    }
   }
 }
 
