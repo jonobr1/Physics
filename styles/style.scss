@@ -120,7 +120,7 @@ a {
   & > * {
     padding-left: $line-height;
   }
-  p.method, p.property, p.constructor {
+  p.method, p.property, p.constructor, p.example {
     margin-bottom: 0;
   }
 }
