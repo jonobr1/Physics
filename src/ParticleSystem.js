@@ -30,6 +30,7 @@ define([
   var ParticleSystem = function() {
 
     this.__equilibrium = false; // are we at equilibrium?
+    this.optimized = false;
 
     this.particles = [];
     this.springs = [];
@@ -40,7 +41,10 @@ define([
 
     var args = arguments.length;
 
-    if (args === 2) {
+    if (args === 1) {
+      this.gravity = new Vector(0, arguments[0]);
+      this.drag = ParticleSystem.DEFAULT_DRAG;
+    } else if (args === 2) {
       this.gravity = new Vector(0, arguments[0]);
       this.drag = arguments[1];
     } else if (args === 3) {
@@ -74,6 +78,15 @@ define([
   _.extend(ParticleSystem.prototype, {
 
     /**
+     * Set whether to optimize the simulation. This enables the check of whether
+     * particles are moving. 
+     */
+    optimize: function(b) {
+      this.optimized = !!b;
+      return this;
+    },
+
+    /**
      * Set the gravity of the ParticleSystem.
      */
     setGravity: function(x, y) {
@@ -86,7 +99,9 @@ define([
      */
     tick: function() {
       this.integrator.step(arguments.length === 0 ? 1 : arguments[0]);
-      this.__equilibrium = !this.needsUpdate();
+      if (this.optimized) {
+        this.__equilibrium = !this.needsUpdate();
+      }
       return this;
     },
 

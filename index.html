@@ -187,8 +187,7 @@
 
   // Physics particles
   var gravity = 0.1; // Occurs in the y-direction, negative y goes up.
-  var drag = Physics.DEFAULT_DRAG;
-  var physics = new Physics(gravity, drag);
+  var physics = new Physics(gravity);
 
   // Particle variables
   var mass = 0.2;
@@ -271,10 +270,12 @@
   var radius = 50;
   var mass = 25;
 
-  var a = physics.makeParticle(mass, canvas.width * 0.25, canvas.height / 2);
-  a.makeFixed(); // Physics will freeze this particle.
+  var x1 = canvas.width * 0.25;
+  var x2 = canvas.width * 0.75;
+  var y = canvas.height / 2;
 
-  var b = physics.makeParticle(mass, canvas.width * 0.75, canvas.height / 2);
+  var a = physics.makeParticle(mass, x1, y);
+  var b = physics.makeParticle(mass, x2, y);
 
   // Create an attraction between the particles.
 
@@ -362,10 +363,12 @@
   var mass = 1;
   var radius = 50;
 
-  var a = physics.makeParticle(mass, canvas.width * 0.25, canvas.height / 2);
-  a.makeFixed();
+  var x1 = canvas.width * 0.25;
+  var x2 = canvas.width * 0.75;
+  var y = canvas.height / 2;
 
-  var b = physics.makeParticle(mass, canvas.width * 0.75, canvas.height / 2);
+  var a = physics.makeParticle(mass, x1, y);
+  var b = physics.makeParticle(mass, x2, y);
 
   var strength = 0.75; // What is the strength of the bond?
   var drag = 0.1; // How much drag is on the string?
@@ -383,11 +386,11 @@
     ctx.arc(a.position.x, a.position.y, radius, 0, Math.PI * 2);
     ctx.fill();
 
-    // Draw a line connecting them
-
     ctx.beginPath();
     ctx.arc(b.position.x, b.position.y, radius, 0, Math.PI * 2);
     ctx.fill();
+
+    // Draw a line connecting them
 
     ctx.beginPath();
     ctx.moveTo(a.position.x, a.position.y);
@@ -396,10 +399,8 @@
 
     // If b is resting then reset it.
     if (b.resting()) {
-      b.position.set(- canvas.width / 4, canvas.height / 2);
-      // Manually set the equilibrium of the `Physics` so that
-      // it's sure to update and keep animating.
-      physics.__equilibrium = false;
+      a.position.set(x1, y);
+      b.position.set(x2, y);
     }
 
   };
