@@ -14,10 +14,25 @@
 
         // Three.js variables, i.e: Rendering variables
 
-        var renderer = new THREE.WebGLRenderer({
-          canvas: document.getElementById('splash'),
-          antialias: true
-        });
+        var canvas = document.getElementById('splash'),
+          renderer,
+          resolution = 32,
+          amount = 35; // How many marbles are there?
+
+        if ((canvas.getContext('webgl')
+          || canvas.getContext('experimental-webgl'))) {
+          renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true
+          });
+        } else {
+          resolution = 4;
+          amount = 25;
+          renderer = new THREE.CanvasRenderer({
+            canvas: canvas
+          });
+        }
+
         var width = renderer.domElement.width;
         var height = renderer.domElement.height;
         var center = new Physics.Vector(width / 2, height / 2);
@@ -40,8 +55,7 @@
 
         // Physics related constants
 
-        var amount = 35,  // How many marbles are there?
-          mass = 1, // What's the mass of each marble?
+        var mass = 1, // What's the mass of each marble?
           radius = 50, // What's the radius of each marble?
           strength = 100000, // What's the strength of the attraction between each marble and the beacon?
           diameter = radius * 2; // Save the diameter for distance checking later.
@@ -63,7 +77,7 @@
 
         // The innards of the beacon.
         // We need to make sure it doesn't inhabit the same surface is the reflection.
-        beacon.mesh = new THREE.Mesh(new THREE.SphereGeometry(radius - 1, 32, 32), new THREE.MeshPhongMaterial({
+        beacon.mesh = new THREE.Mesh(new THREE.SphereGeometry(radius - 1, resolution, resolution), new THREE.MeshPhongMaterial({
           transparent: true,
           blending: THREE.AdditiveBlending,
           shininess: 0,
@@ -72,7 +86,7 @@
         }));
 
         // The outer shell.
-        beacon.reflection = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 32), new THREE.MeshBasicMaterial({
+        beacon.reflection = new THREE.Mesh(new THREE.SphereGeometry(radius, resolution, resolution), new THREE.MeshBasicMaterial({
           opacity: 0.75,
           blending: THREE.AdditiveBlending,
           envMap: reflection.renderTarget
@@ -230,7 +244,7 @@
 
           // Create the geometry and material for the mesh.
 
-          var geometry = new THREE.SphereGeometry(radius, 32, 32);
+          var geometry = new THREE.SphereGeometry(radius, resolution, resolution);
           var material = new THREE.MeshPhongMaterial({
             transparent: true,
             shininess: 0,
