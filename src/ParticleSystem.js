@@ -30,7 +30,7 @@ define([
   var ParticleSystem = function() {
 
     this.__equilibrium = false; // are we at equilibrium?
-    this.optimized = false;
+    this.__optimized = false;
 
     this.particles = [];
     this.springs = [];
@@ -82,7 +82,7 @@ define([
      * particles are moving. 
      */
     optimize: function(b) {
-      this.optimized = !!b;
+      this.__optimized = !!b;
       return this;
     },
 
@@ -99,7 +99,7 @@ define([
      */
     tick: function() {
       this.integrator.step(arguments.length === 0 ? 1 : arguments[0]);
-      if (this.optimized) {
+      if (this.__optimized) {
         this.__equilibrium = !this.needsUpdate();
       }
       return this;

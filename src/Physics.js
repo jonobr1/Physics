@@ -119,7 +119,7 @@ define([
       a();
     });
 
-    if ((this.optimized && !this.__equilibrium || !this.optimized) && this.playing) {
+    if ((this.__optimized && !this.__equilibrium || !this.__optimized) && this.playing) {
 
       raf(function() {
         update.call(_this);
