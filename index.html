@@ -172,12 +172,10 @@
             <canvas id="particle-example" width="578" height="300"></canvas>
           </div>
           <script type="text/javascript" class="live-demo">
-// Assumes jQuery for element selection and events.
-$(function() {
+(function() {
 
   // Grab the canvas and context before we can draw anything.
-  var $canvas = $('#particle-example');
-  var canvas = $canvas[0];
+  var canvas = document.getElementById('particle-example');
   var ctx = canvas.getContext('2d');
 
   if (!ctx) {
@@ -185,7 +183,7 @@ $(function() {
     return;
   }
 
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+  ctx.fillStyle = '#333';
 
   // Physics particles
   var gravity = 0.1; // Occurs in the y-direction, negative y goes up.
@@ -204,7 +202,7 @@ $(function() {
     // Clear the previous contents of the context.
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // If out of view
+    // If out of view then reset it's position to where it started.
     if (particle.position.y > canvas.height + radius * 2) {
       particle.position.set(canvas.width / 2, - radius * 2);
       particle.velocity.clear();
@@ -220,15 +218,18 @@ $(function() {
 
   };
 
+  // Bind the render function to when physics updates.
   physics.onUpdate(render);
 
-  $canvas.click(function(e) {
-    physics.toggle(); // Toggle between play and paused states.
-  });
-
+  // Render a posterframe.
   render();
 
-});
+  // Bind canvas click to toggle.
+  canvas.onclick = function(e) {
+    physics.toggle(); // Toggle between play and paused states.
+  };
+
+})();
          </script>
          <script type="text/javascript">
 
@@ -260,33 +261,25 @@ $(function() {
   var ctx = canvas.getContext('2d');
 
   if (!ctx) {
-    // No context for drawing, sorry.
     return;
   }
 
-  // Set the fill and stroke colors for rendering.
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+  ctx.fillStyle = '#333';
 
-  // Create a new physics
   var physics = new Physics();
 
-  // Particle variables
   var radius = 50;
-  var mass = 10;
-  var x = canvas.width / 4;
-  var y = canvas.height / 2;
+  var mass = 25;
 
-  // Create the particles.
-  var a = physics.makeParticle(mass, x, y);
+  var a = physics.makeParticle(mass, canvas.width * 0.25, canvas.height / 2);
+  a.makeFixed(); // Physics will freeze this particle.
 
-  x += canvas.width / 2;
-
-  var b = physics.makeParticle(mass, x, y);
+  var b = physics.makeParticle(mass, canvas.width * 0.75, canvas.height / 2);
 
   // Create an attraction between the particles.
 
   // The strength of the bond between two particles.
-  var strength = 10000;
+  var strength = 50000;
 
   // The proximity at which the attraction will be enabled.
   var minDistance = canvas.width;
@@ -316,11 +309,11 @@ $(function() {
 
   };
 
-  render();
-
   physics.onUpdate(render);
 
-  canvas.onclick = function() {
+  render();
+
+  canvas.onclick = function(e) {
     physics.toggle(); // Toggle between play and paused states.
   };
 
@@ -359,9 +352,80 @@ $(function() {
     return;
   }
 
-  // Make a Physics.Spring example.
+  ctx.fillStyle = '#333';
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+
+  var physics = new Physics();
+
+  var mass = 1;
+  var radius = 50;
+
+  var a = physics.makeParticle(mass, canvas.width * 0.25, canvas.height / 2);
+  a.makeFixed();
+
+  var b = physics.makeParticle(mass, canvas.width * 0.75, canvas.height / 2);
+
+  var strength = 0.75; // What is the strength of the bond?
+  var drag = 0.1; // How much drag is on the string?
+  var rest = radius * 2; // What is the rest length of the spring?
+
+  var spring = physics.makeSpring(a, b, strength, drag, rest);
+
+  var render = function() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw each particle
+
+    ctx.beginPath();
+    ctx.arc(a.position.x, a.position.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Draw a line connecting them
+
+    ctx.beginPath();
+    ctx.arc(b.position.x, b.position.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(a.position.x, a.position.y);
+    ctx.lineTo(b.position.x, b.position.y);
+    ctx.stroke();
+
+    // If b is resting then reset it.
+    if (b.resting()) {
+      b.position.set(- canvas.width / 4, canvas.height / 2);
+      // Manually set the equilibrium of the `Physics` so that
+      // it's sure to update and keep animating.
+      physics.__equilibrium = false;
+    }
+
+  };
+
+  physics.onUpdate(render);
+
+  render();
+
+  canvas.onclick = function(e) {
+    physics.toggle(); // Toggle between play and paused states.
+  };
 
 })();
+          </script>
+          <script type="text/javascript">
+
+            // When clicking the canvas toggle pausing and playing the simulation
+            $('#spring-example').parent().click(function() {
+              var $el = $(this);
+              if ($el.hasClass('playing')) {
+                $el.removeClass('playing');
+              } else {
+                $el.addClass('playing');
+              }
+            });
+
           </script>
         </div>
 
