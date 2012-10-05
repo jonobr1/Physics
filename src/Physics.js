@@ -15,6 +15,8 @@ define([
 
     var _this = this;
 
+    this.playing = false;
+
     ParticleSystem.apply(this, arguments);
 
     this.animations = [];
@@ -30,6 +32,48 @@ define([
   });
 
   _.extend(Physics.prototype, ParticleSystem.prototype, {
+
+    /**
+     * Play the animation loop. Doesn't affect whether in equilibrium or not.
+     */
+    play: function() {
+
+      if (this.playing) {
+        return this;
+      }
+
+      this.playing = true;
+      this.__equilibrium = false;
+      update.call(this);
+
+      return this;
+
+    },
+
+    /**
+     * Pause the animation loop. Doesn't affect whether in equilibrium or not.
+     */
+    pause: function() {
+
+      this.playing = false;
+      return this;
+
+    },
+
+    /**
+     * Toggle between playing and pausing the simulation.
+     */
+    toggle: function() {
+
+      if (this.playing) {
+        this.pause();
+      } else {
+        this.play();
+      }
+
+      return this;
+
+    },
 
     onUpdate: function(func) {
 
@@ -50,8 +94,12 @@ define([
      */
     update: function() {
 
-      if (this.__equilibrium) {
-        this.__equilibrium = false;
+      if (!this.__equilibrium) {
+        return this;
+      }
+
+      this.__equilibrium = false;
+      if (this.playing) {
         update.call(this);
       }
 
@@ -71,7 +119,7 @@ define([
       a();
     });
 
-    if (!this.__equilibrium) {
+    if (!this.__equilibrium && this.playing) {
 
       raf(function() {
         update.call(_this);

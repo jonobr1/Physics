@@ -11,47 +11,84 @@
 
     <script type="text/javascript" src="./third-party/prettify/prettify.js"></script>
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+    <script type="text/javascript" src="./build/physics.js"></script>
 
     <script type="text/javascript">
 
-      $(prettyPrint);
+      $(function() {
+
+        var $window = $(window);
+        var width = $window.width();
+        var height = $window.height();
+
+        var $toc = $('#toc');
+        var $content = $('#content');
+
+        $window
+          .resize(function(e) {
+
+
+          })
+          .scroll(function(e) {
+
+            var offset = document.body.scrollLeft;
+            $toc.css({
+              marginLeft: - offset + 'px'
+            });
+
+          });
+
+          $('script.live-demo').each(function(i, elem) {
+
+            var $elem = $(elem);
+            $('<pre class="prettyprint" />')
+              .html($elem.html())
+              .appendTo($elem.parent());
+
+          });
+
+          prettyPrint();
+
+      });
 
     </script>
 
   </head>
   <body>
-    <ul id="toc">
-      <li>
-        <a href="#">Physics</a>
-      </li>
-      <li>
-        <a href="#downloads">Downloads</a>
-      </li>
-      <li>
-        <a href="#purpose">Purpose</a>
-      </li>
-      <li>
-        <a href="#examples">Examples</a>
-      </li>
-      <li>
-        <a href="#usage">Basic Usage</a>
-      </li>
-      <li>
-        <a href="#documentation">Documentation</a>
-        <ul>
-          <li><a href="#physics">Physics</a></li>
-          <li><a href="#particle-system">ParticleSystem</a></li>
-          <li><a href="#particle">Particle</a></li>
-          <li><a href="#attraction">Attraction</a></li>
-          <li><a href="#spring">Spring</a></li>
-          <li><a href="#vector">Vector</a></li>
-          <li><a href="#common">common</a></li>
-        </ul>
-      </li>
-      <li>
-        <a href="#credits">Credits</a>
-      </li>
-    </ul>
+    <div id="toc">
+      <ul>
+        <li>
+          <a href="#">Physics</a>
+        </li>
+        <li>
+          <a href="#downloads">Downloads</a>
+        </li>
+        <li>
+          <a href="#purpose">Purpose</a>
+        </li>
+        <li>
+          <a href="#usage">Basic Usage</a>
+        </li>
+        <li>
+          <a href="#examples">Examples</a>
+        </li>
+        <li>
+          <a href="#documentation">Documentation</a>
+          <ul>
+            <li><a href="#physics">Physics</a></li>
+            <li><a href="#particle-system">ParticleSystem</a></li>
+            <li><a href="#particle">Particle</a></li>
+            <li><a href="#attraction">Attraction</a></li>
+            <li><a href="#spring">Spring</a></li>
+            <li><a href="#vector">Vector</a></li>
+            <li><a href="#common">common</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#credits">Credits</a>
+        </li>
+      </ul>
+    </div>
     <div id="content">
 
       <section id="introduction">
@@ -70,7 +107,7 @@
             <a href="https://raw.github.com/jonobr1/Physics/master/build/physics.js">Development Version</a>
           </dt>
           <dd>
-            Uncompressed with comments about 25kb
+            Uncompressed with comments about <code>25kb</code>
           </dd>
         </p>
         <p>
@@ -78,7 +115,7 @@
             <a href="https://raw.github.com/jonobr1/Physics/master/build/physics.min.js">Production Version</a>
           </dt>
           <dd>
-            Minified using Closure Compiler about 12kb
+            Minified using Closure Compiler about <code>12kb</code>
           </dd>
         </p>
         <p>
@@ -108,6 +145,226 @@
             <strong>Bottom-line</strong>: If you&apos;re like me then at the end of the day you just want to make something work. Physics is great for sketching and quick prototyping. It&apos;s not meant to be the foundation for your next HTML5 game nor replace other more robust Physics Engines.
           </li>
         </ul>
+      </section>
+
+      <section id="usage">
+        <h2>Basic Usage</h2>
+        <p>
+          When using <code>Physics</code> there are a few core concepts that make developing much easier:
+          <ol>
+            <li>
+              When you make a <code>new Physics</code>, this represents the world in which all simulated interactions take place.
+            </li>
+            <li>
+              There are three main inhabitants of this world: <code>Physics.Particle</code>, <code>Physics.Attraction</code>, and <code>Physics.Spring</code>.
+            </li>
+            <li>
+              <code>Physics</code> is <code>Physics.ParticleSystem</code> with a few helper methods added. See <a href="#documentation">documentation</a> for specifics.
+            </li>
+          </ol>
+        </p>
+        <h3>Particle in situ</h3>
+        <div class="example">
+          <p class="description">
+            This demonstrates basic functionality of <code>Physics</code> and how a <code>Physics.Particle</code> inhabits the space:
+          </p>
+          <div class="live-demo">
+            <canvas id="particle-example" width="578" height="300"></canvas>
+          </div>
+          <script type="text/javascript" class="live-demo">
+// Assumes jQuery for element selection and events.
+$(function() {
+
+  // Grab the canvas and context before we can draw anything.
+  var $canvas = $('#particle-example');
+  var canvas = $canvas[0];
+  var ctx = canvas.getContext('2d');
+
+  if (!ctx) {
+    // No context for drawing, sorry.
+    return;
+  }
+
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+
+  // Physics particles
+  var gravity = 0.1; // Occurs in the y-direction, negative y goes up.
+  var drag = Physics.DEFAULT_DRAG;
+  var physics = new Physics(gravity, drag);
+
+  // Particle variables
+  var mass = 0.2;
+  var x = canvas.width / 2;
+  var y = canvas.height / 2;
+  var particle = physics.makeParticle(mass, x, y);
+  var radius = 100;
+
+  var render = function() {
+
+    // Clear the previous contents of the context.
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // If out of view
+    if (particle.position.y > canvas.height + radius * 2) {
+      particle.position.set(canvas.width / 2, - radius * 2);
+      particle.velocity.clear();
+    }
+
+    var x = particle.position.x;
+    var y = particle.position.y;
+
+    // Draw the particle
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+    ctx.fill();
+
+  };
+
+  physics.onUpdate(render);
+
+  $canvas.click(function(e) {
+    physics.toggle(); // Toggle between play and paused states.
+  });
+
+  render();
+
+});
+         </script>
+         <script type="text/javascript">
+
+            // When clicking the canvas toggle pausing and playing the simulation
+            $('#particle-example').parent().click(function() {
+              var $el = $(this);
+              if ($el.hasClass('playing')) {
+                $el.removeClass('playing');
+              } else {
+                $el.addClass('playing');
+              }
+            });
+
+         </script>
+
+        </div>
+        <h3>Attraction</h3>
+        <div class="example">
+          <p class="description">
+            A <code>Physics.Attraction</code> affects how two <code>Physics.Particle</code>'s behave between each other.
+          </p>
+          <div class="live-demo">
+            <canvas id="attraction-example" width="578" height="300"></canvas>
+          </div>
+          <script type="text/javascript" class="live-demo">
+(function() {
+
+  var canvas = document.getElementById('attraction-example');
+  var ctx = canvas.getContext('2d');
+
+  if (!ctx) {
+    // No context for drawing, sorry.
+    return;
+  }
+
+  // Set the fill and stroke colors for rendering.
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+
+  // Create a new physics
+  var physics = new Physics();
+
+  // Particle variables
+  var radius = 50;
+  var mass = 10;
+  var x = canvas.width / 4;
+  var y = canvas.height / 2;
+
+  // Create the particles.
+  var a = physics.makeParticle(mass, x, y);
+
+  x += canvas.width / 2;
+
+  var b = physics.makeParticle(mass, x, y);
+
+  // Create an attraction between the particles.
+
+  // The strength of the bond between two particles.
+  var strength = 10000;
+
+  // The proximity at which the attraction will be enabled.
+  var minDistance = canvas.width;
+
+  // Make the attraction and add it to physics
+  var attraction = physics.makeAttraction(a, b, strength, minDistance);
+
+  var render = function() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    var x1 = a.position.x;
+    var y1 = a.position.y;
+
+    var x2 = b.position.x;
+    var y2 = b.position.y;
+
+    // Draw a
+    ctx.beginPath();
+    ctx.arc(x1, y1, radius, 0, Math.PI * 2, false);
+    ctx.fill();
+
+    // Draw b
+    ctx.beginPath();
+    ctx.arc(x2, y2, radius, 0, Math.PI * 2, false);
+    ctx.fill();
+
+  };
+
+  render();
+
+  physics.onUpdate(render);
+
+  canvas.onclick = function() {
+    physics.toggle(); // Toggle between play and paused states.
+  };
+
+})();
+          </script>
+          <script type="text/javascript">
+
+            // When clicking the canvas toggle pausing and playing the simulation
+            $('#attraction-example').parent().click(function() {
+              var $el = $(this);
+              if ($el.hasClass('playing')) {
+                $el.removeClass('playing');
+              } else {
+                $el.addClass('playing');
+              }
+            });
+
+         </script>
+        </div>
+
+        <h3>Spring</h3>
+        <div class="example">
+          <p class="description">
+
+          </p>
+          <div class="live-demo">
+            <canvas id="spring-example" width="578" height="300"></canvas>
+          </div>
+          <script type="text/javascript" class="live-demo">
+(function() {
+
+  var canvas = document.getElementById('spring-example');
+  var ctx = canvas.getContext('2d');
+
+  if (!ctx) {
+    return;
+  }
+
+  // Make a Physics.Spring example.
+
+})();
+          </script>
+        </div>
+
       </section>
 
       <section id="examples">
@@ -143,45 +400,6 @@
             </p>
           </li>
         </ul>
-      </section>
-
-      <section id="usage">
-        <h2>Basic Usage</h2>
-        <!-- <h3>Simple</h3> -->
-        <pre class="prettyprint">
-
-// Setup up a physics world.
-var physics = new Physics()
-  .onUpdate(function() {
-    // Draw loop
-    for (var i = 0; i &lt; 10; i++) {
-      var p = this.particles[i];
-      ctx.beginPath();
-      ctx.arc(p.position.x, p.position.y, 12.5, 0, Math.PI * 2, false);
-      ctx.fill();
-    }
-  });
-
-// Add particles to the physics.
-for (var i = 0; i &lt; 10; i++) {
-  var x = Math.random() * canvas.width;
-  var y = Math.random() * canvas.height;
-  physics.makeParticle(0.2, x, y);
-}
-
-// Create interactions between particles.
-for (var i = 0; i &lt; 10; i++) {
-  var p1 = physics.particles[i];
-  for (var j = 0; j &lt; 10; j++) {
-    if (i == j) {
-      continue;
-    }
-    var p2 = particles[j];
-    physics.makeAttraction(p1, p2, -10, 25);
-  }
-}
-        </pre>
-        <!-- <h3>Advanced</h3> -->
       </section>
 
       <section id="documentation">
@@ -262,6 +480,30 @@ for (var i = 0; i &lt; 10; i++) {
             </p>
             <p>
               A function, f, to be invoked when physics is updating.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>play</strong> <code>physics.play()</code>
+            </p>
+            <p>
+              <code>Physics</code> will not begin simulating until you request it to. This is how to do that. It acts as the Request Animation Frame controller.
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>pause</strong> <code>physics.pause()</code>
+            </p>
+            <p>
+              Stops the simulation. <em>This stops all calculations from continuing.</em>
+            </p>
+          </li>
+          <li>
+            <p class="method">
+              <strong>toggle</strong> <code>physics.toggle()</code>
+            </p>
+            <p>
+              Convenient method to toggle between play and paused states. If playing and <code>toggle</code> is invoked then the simulation will pause and vice-versa.
             </p>
           </li>
           <li>

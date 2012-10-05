@@ -87,7 +87,6 @@ function build(_params) {
 
     console.log('Compiling minified source ...');
 
-
     closure.compile(to_write, function(error, code) {
       if (error) {
         console.log(error);

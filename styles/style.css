@@ -110,6 +110,12 @@ a:hover, a:active {
   list-style: none; }
   #content ul li:not(:last-child), #content ol li:not(:last-child), #content li:not(:last-child), #toc ul li:not(:last-child), #toc ol li:not(:last-child), #toc li:not(:last-child) {
     margin-bottom: 20px; }
+  #content ul ol, #content ol ol, #content ol, #toc ul ol, #toc ol ol, #toc ol {
+    list-style: decimal; }
+    #content ul ol li, #content ol ol li, #content ol li, #toc ul ol li, #toc ol ol li, #toc ol li {
+      margin-left: 20px;
+      width: 75%;
+      margin-bottom: 0; }
 #content dd, #toc dd {
   margin-bottom: 20px; }
 #content #documentation dt, #toc #documentation dt {
@@ -127,14 +133,41 @@ a:hover, a:active {
   top: 0;
   left: 0;
   bottom: 0;
-  width: 125px;
-  padding: 40px 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
   border-right: 1px solid white; }
+  #toc > ul {
+    width: 125px;
+    padding: 40px 20px; }
   #toc li ul {
     margin: 10px 0;
     padding: 0 0 0 10px; }
     #toc li ul li {
       margin-bottom: 0 !important; }
+
+div.live-demo {
+  position: relative;
+  border: 1px solid white;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: pointer; }
+  div.live-demo:after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 10px;
+    background: rgba(255, 255, 255, 0.75);
+    padding: 4px 6px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    opacity: 0.5;
+    content: "Play"; }
+  div.live-demo:hover:after {
+    opacity: 1.0; }
+  div.live-demo.playing:after {
+    content: "Pause"; }
 
 #content {
   position: absolute;

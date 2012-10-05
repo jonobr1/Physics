@@ -2,6 +2,7 @@
 /// https://github.com/weaver/scribbles/blob/master/node/google-closure/lib/closure.js
 /// Compress javascript with Node.js using the Closure Compiler
 /// Service.
+/// Attempted update for Node.js v0.8
 
 var sys = require('sys');
 
@@ -37,21 +38,23 @@ function compile(code, next) {
           output_format: 'json',
           output_info: 'compiled_code'
         }),
-        client = http.createClient(80, host).on('error', next),
-        req = client.request('POST', '/compile', {
-          'Host': host,
-          'Content-Length': body.length,
-          'Content-Type': 'application/x-www-form-urlencoded'
+        req = http.request({
+          host: host,
+          port: 80,
+          path: '/compile',
+          method: 'POST'
+        }, function(res) {
+          if (res.statusCode != 200) {
+            next(new Error('Unexpected HTTP response: ' + res.statusCode));
+            return;
+          }
+          res.setEncoding('utf-8');
+          capture(res, parseResponse);
         });
 
-    req.on('error', next).end(body);
-
-    req.on('response', function(res) {
-      if (res.statusCode != 200)
-        next(new Error('Unexpected HTTP response: ' + res.statusCode));
-      else
-        capture(res, 'utf-8', parseResponse);
-    });
+    req.on('error', next)
+    req.write(body);
+    req.end()
 
     function parseResponse(err, data) {
       err ? next(err) : loadJSON(data, function(err, obj) {
@@ -76,11 +79,13 @@ function compile(code, next) {
 // + next     - Function error/success callback
 //
 // Returns nothing.
-function capture(input, encoding, next) {
+function capture(input, next) {
+
   var buffer = '';
 
   input.on('data', function(chunk) {
-    buffer += chunk.toString(encoding);
+    console.log('data chunk: ' + chunk);
+    buffer += chunk;
   });
 
   input.on('end', function() {

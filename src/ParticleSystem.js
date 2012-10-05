@@ -96,25 +96,26 @@ define([
      */
     needsUpdate: function() {
 
-      needsUpdate = false;
+      for (var i = 0, l = this.particles.length; i < l; i++) {
+        if (!this.particles[i].resting()) {
+          return true;
+        }
+      }
 
       for (var i = 0, l = this.springs.length; i < l; i++) {
         if (!this.springs[i].resting()) {
-          needsUpdate = true;
-          break;
+          return true;
         }
       }
 
-      if (!needsUpdate) {
-        for (var i = 0, l = this.attractions.length; i < l; i++) {
-          if (!this.attractions[i].resting()) {
-            needsUpdate = true;
-            break;
-          }
+
+      for (var i = 0, l = this.attractions.length; i < l; i++) {
+        if (!this.attractions[i].resting()) {
+          return true;
         }
       }
 
-      return needsUpdate;
+      return false;
 
     },
 

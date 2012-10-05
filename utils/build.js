@@ -10,7 +10,9 @@ var params = {
 
 require('./builder.js').build(params);
 
-params.minify = true;
-params.out = '../build/Physics.min.js';
+// Currently broken.
 
-require('./builder.js').build(params);
+// params.minify = true;
+// params.out = '../build/Physics.min.js';
+
+// require('./builder.js').build(params);

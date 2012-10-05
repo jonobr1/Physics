@@ -46,7 +46,7 @@
           strength = 100000, // What's the strength of the attraction between each marble and the beacon?
           diameter = radius * 2; // Save the diameter for distance checking later.
 
-        var physics = new Physics(10);
+        var physics = new Physics();
 
         // Create the fixed point light / anchor that is selectable,
         // we'll call it a beacon.
@@ -195,7 +195,7 @@
         });
 
         // Let's kick off the calculations right away!
-        physics.update();
+        physics.play();
 
         // Let's also add a mouse event bound to the beacon's location.
         var has = !!window.addEventListener;

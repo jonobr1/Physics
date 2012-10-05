@@ -242,7 +242,7 @@ Vector = (function (_) {
     },
 
     equals: function(v) {
-      return this.distanceTo(v) < 0.0001 /* almost same position */;
+      return (this.distanceTo(v) < 0.0001 /* almost same position */);
     },
 
     lerp: function(v, t) {
@@ -252,7 +252,7 @@ Vector = (function (_) {
     },
 
     isZero: function() {
-      return ( this.lengthSquared() < 0.0001 /* almost zero */ );
+      return (this.length() < 0.0001 /* almost zero */ );
     }
 
   });
@@ -275,6 +275,8 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
     var _this = this;
 
+    this.playing = false;
+
     ParticleSystem.apply(this, arguments);
 
     this.animations = [];
@@ -290,6 +292,48 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
   });
 
   _.extend(Physics.prototype, ParticleSystem.prototype, {
+
+    /**
+     * Play the animation loop. Doesn't affect whether in equilibrium or not.
+     */
+    play: function() {
+
+      if (this.playing) {
+        return this;
+      }
+
+      this.playing = true;
+      this.__equilibrium = false;
+      update.call(this);
+
+      return this;
+
+    },
+
+    /**
+     * Pause the animation loop. Doesn't affect whether in equilibrium or not.
+     */
+    pause: function() {
+
+      this.playing = false;
+      return this;
+
+    },
+
+    /**
+     * Toggle between playing and pausing the simulation.
+     */
+    toggle: function() {
+
+      if (this.playing) {
+        this.pause();
+      } else {
+        this.play();
+      }
+
+      return this;
+
+    },
 
     onUpdate: function(func) {
 
@@ -310,8 +354,12 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
      */
     update: function() {
 
-      if (this.__equilibrium) {
-        this.__equilibrium = false;
+      if (!this.__equilibrium) {
+        return this;
+      }
+
+      this.__equilibrium = false;
+      if (this.playing) {
         update.call(this);
       }
 
@@ -331,7 +379,7 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
       a();
     });
 
-    if (!this.__equilibrium) {
+    if (!this.__equilibrium && this.playing) {
 
       raf(function() {
         update.call(_this);
@@ -358,12 +406,10 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
    * 
    * @version 0.3
    * @date March 25, 2012
-   *
-   * @class
    */
 
   /**
-   * The who kit and kaboodle.
+   * The whole kit and kaboodle.
    *
    * @class
    */
@@ -436,25 +482,26 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
      */
     needsUpdate: function() {
 
-      needsUpdate = false;
+      for (var i = 0, l = this.particles.length; i < l; i++) {
+        if (!this.particles[i].resting()) {
+          return true;
+        }
+      }
 
       for (var i = 0, l = this.springs.length; i < l; i++) {
         if (!this.springs[i].resting()) {
-          needsUpdate = true;
-          break;
+          return true;
         }
       }
 
-      if (!needsUpdate) {
-        for (var i = 0, l = this.attractions.length; i < l; i++) {
-          if (!this.attractions[i].resting()) {
-            needsUpdate = true;
-            break;
-          }
+
+      for (var i = 0, l = this.attractions.length; i < l; i++) {
+        if (!this.attractions[i].resting()) {
+          return true;
         }
       }
 
-      return needsUpdate;
+      return false;
 
     },
 
@@ -712,8 +759,6 @@ Spring = (function (Vector, _) {
      * Returns a boolean describing whether the spring is resting or not.
      * Convenient for knowing whether or not the spring needs another update
      * tick.
-     *
-     * TODO: Assumes a length of zero at the moment...
      */
     resting: function() {
 
@@ -721,7 +766,7 @@ Spring = (function (Vector, _) {
       var b = this.b;
       var l = this.length;
 
-      return (a.fixed && b.fixed)
+      return !this.on || (a.fixed && b.fixed)
         || (a.fixed && (l === 0 ? b.position.equals(a.position) : b.position.distanceTo(a.position) <= l) && b.resting())
         || (b.fixed && (l === 0 ? a.position.equals(b.position) : a.position.distanceTo(b.position) <= l) && a.resting());
 
@@ -796,7 +841,7 @@ Attraction = (function (Vector, _) {
       var b = this.b;
       var l = this.distanceMin;
 
-      return (a.fixed && b.fixed)
+      return !this.on || (a.fixed && b.fixed)
         || (a.fixed && b.position.distanceTo(a.position) <= l && b.resting())
         || (b.fixed && a.position.distanceTo(b.position) <= l && a.resting());
 

@@ -63,6 +63,15 @@ a {
         margin-bottom: $line-height;
       }
     }
+    ol {
+      list-style: decimal;
+      // list-style-position: inside;
+      li {
+        margin-left: $line-height;
+        width: 75%;
+        margin-bottom: 0;
+      }
+    }
   }
 
   dd {
@@ -89,13 +98,19 @@ a {
 }
 
 #toc {
+
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
-  width: 185px - $line-height * 3;
-  padding: $line-height * 2 $line-height;
+  overflow-y: auto;
+  overflow-x: hidden;
   border-right: 1px solid $highlight;
+
+  & > ul {
+    width: 185px - $line-height * 3;
+    padding: $line-height * 2 $line-height;
+  }
 
   li ul {
 
@@ -106,6 +121,35 @@ a {
       margin-bottom: 0 !important;
     }
 
+  }
+
+}
+
+div.live-demo {
+
+  position: relative;
+  border: 1px solid white;
+  @include user-select(none);
+  cursor: pointer;
+
+  &:after {
+     position: absolute;
+     top: 0;
+     left: 0;
+     margin: $line-height / 2;
+     background: rgba(255, 255, 255, 0.75);
+     padding: 4px 6px;
+     @include border-radius(3px);
+     opacity: 0.5;
+     content: "Play";
+  }
+
+  &:hover:after {
+    opacity: 1.0;
+  }
+
+  &.playing:after {
+    content: "Pause";
   }
 
 }
@@ -126,7 +170,6 @@ a {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  // font-family: 'Oxygen Mono';
   margin-bottom: $line-height;
 }
 
