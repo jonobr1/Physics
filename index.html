@@ -133,7 +133,7 @@
             <strong>Familiar</strong>: The API hails from the popular <a href="http://murderandcreate.com/physics/">Traer Physics Library</a> with some additional sugar for quick-and-dirty simulations. Make a couple <code>Physics.Particle</code>&apos;s, attach a <code>Physics.Spring</code> or a <code>Physics.Attraction</code> and away you go!
           </li>
           <li>
-            <strong>Convenient</strong>: the <code>Physics</code> class itself extends <code>Physics.ParticleSystem</code> sets it up and offers an animation loop for you. Create a <code>var physics = new Physics()</code> and call <code>physics.update()</code> when you want to recalculate. Unlike other libraries, when Physics sees that all particles are resting it discontinues its animation loop.
+            <strong>Convenient</strong>: the <code>Physics</code> class itself is a <code>Physics.ParticleSystem</code> which offers an animation loop for you. Create a <code>var physics = new Physics()</code> and call <code>physics.play()</code> when you want to kick things off. With <code>physics.optimize(true)</code> it will keep track of particles rest state. During this time, when Physics sees that all particles are resting it discontinues its animation loop.
           </li>
           <li>
             <strong>Flexible</strong>: Physics source is <a href="http://requirejs.org/">requirified</a> so you can take what you need. Many physics engine's require their own Vector class, but with Physics you can swap in your own. This is particularly useful for larger projects where Physics is great to get off the ground and can be replaced easily at a later date for a more optimized engine.
@@ -163,10 +163,13 @@
             </li>
           </ol>
         </p>
+        <p>
+          Now knowing this, let's move forward and create some simulations. <em>N.B: All simulations for this section require <code>canvas2d</code> to draw objects</em>.
+        </p>
         <h3>Particle in situ</h3>
         <div class="example">
           <p class="description">
-            This demonstrates basic functionality of <code>Physics</code> and how a <code>Physics.Particle</code> inhabits the space:
+            First, we're going to make a new space for physics to take place. This physics will have gravity and we will add a particle to it &mdash; when the particle falls out of viewer's sight we'll place it back where it started:
           </p>
           <div class="live-demo">
             <canvas id="particle-example" width="578" height="300"></canvas>
@@ -248,11 +251,14 @@
         <h3>Attraction</h3>
         <div class="example">
           <p class="description">
-            A <code>Physics.Attraction</code> affects how two <code>Physics.Particle</code>'s behave between each other.
+            The previous example showed physics with gravity, a constant force applied to all particles in the simulation. However, this isn't necessary. Now we'll create a physics without gravity and two particles. Instead of gravitational force we'll define a different type of behavior for the particles to exhibit, attraction:
           </p>
           <div class="live-demo">
             <canvas id="attraction-example" width="578" height="300"></canvas>
           </div>
+          <p style="margin-top:20px;">
+            Notice the particles continue to be attracted to each other.
+          </p>
           <script type="text/javascript" class="live-demo">
 (function() {
 
@@ -338,7 +344,7 @@
         <h3>Spring</h3>
         <div class="example">
           <p class="description">
-
+            Another more tactile behavior is known as a spring. Particles connected via a spring aim to always be at a specified rest distance from each other. In this example we'll create a spring with a rest distance <em>smaller</em> than the distance between the two particles. When the particles arrive at a state of rest, we'll reset the simulation by setting the positions of the particles to their original values:
           </p>
           <div class="live-demo">
             <canvas id="spring-example" width="578" height="300"></canvas>
@@ -435,7 +441,7 @@
       <section id="examples">
         <h2>Examples</h2>
         <p>
-          Physics is renderer agnostic. This means that it only stores positions, how you draw those positions and relationships are up to you! Below are just a few examples in different HTML rendering contexts to get you started:
+          We just saw some basic <code>canvas2d</code> use cases, but <code>Physics</code> is renderer agnostic. This means that it only stores positions, how you draw those positions and relationships are up to you! In addition there are many other nuances and techniques of simulation that <code>Physics</code> can simulate. Below are just a few examples in different HTML rendering contexts and more advanced simulations to give you an idea:
         </p>
         <ul>
           <li>
@@ -443,7 +449,7 @@
               <a href="./examples/cloth.html">Cloth</a>
             </p>
             <p class="example">
-              Simulates cloth, drag mouse to change corner position. Demonstrates how to use and draw a grid of <code>Physics.Spring</code>'s in <code>Canvas2d</code> context.
+              Simulates cloth, drag mouse to change corner position. Demonstrates how to use and draw a grid of <code>Physics.Spring</code>'s in <code>canvas2d</code> context.
             </p>
           </li>
           <li>
@@ -451,7 +457,7 @@
               <a href="./examples/marbles.html">Marbles</a>
             </p>
             <p>
-              Simulates marbles all attracted to one marble. Click and drag to move marble position. Demonstrates how to use <code>Physics.Attraction</code>'s in <code>WebGL</code> context. This example also shows how to handle circular collisions of equal mass.
+              Simulates marbles all attracted to one marble. Click and drag to move marble position. Demonstrates how to use <code>Physics.Attraction</code>'s in <code>webgl</code> context. This example also shows how to handle circular collisions of equal mass.
             </p>
           </li>
           <li>
@@ -461,7 +467,7 @@
               </a>
             </p>
             <p>
-              Simulates the string plucking, akin to acoustic string instruments. Click and drag string. Demonstrates how to use <code>Physics.Spring</code>'s in <code>SVG</code> context.
+              Simulates the string plucking, akin to acoustic string instruments. Click and drag string. Demonstrates how to use <code>Physics.Spring</code>'s in <code>svg</code> context.
             </p>
           </li>
         </ul>
