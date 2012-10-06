@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Physics: String</title>
+    <link rel="stylesheet" type="text/css" href="../styles/style.css" />
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+    <script type="text/javascript" src="../build/physics.min.js"></script>
+  </head>
+  <body>
+    <svg id="splash" width="800" height="600"></svg>
+    <script type="text/javascript">
+
+      var Strand = function(physics, x1, y1, x2, y2) {
+
+        this.physics = physics;
+        this.mass = 0.2;
+
+        this.a = physics.makeParticle(this.mass, x1, y1);
+        this.b = physics.makeParticle(this.mass, x2, y2);
+
+        this.domElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        this.setAttributes({
+          'stroke': '#333',
+          'stroke-linejoin': 'round',
+          'fill': 'none',
+          'stroke-width': 6
+        });
+
+        this.update().render();
+
+      };
+
+      Strand.prototype = {
+
+        appendTo: function(svg) {
+
+          svg.appendChild(this.domElement);
+          return this;
+
+        },
+
+        setAttributes: function(attrs) {
+
+          for (var k in attrs) {
+            var v = attrs[k];
+            this.domElement.setAttribute(k, v);
+          }
+
+          return this;
+
+        },
+
+        update: function() {
+
+          // construct commands
+
+          return this;
+
+        },
+
+        render: function() {
+
+          // construct d
+
+        }
+
+      };
+
+      $(function() {
+
+        var svg = $('#splash')[0];
+
+        var physics = new Physics();
+
+        var width = svg.width.baseVal.value;
+        var height = svg.height.baseVal.value;
+
+        var string = new Strand(physics, width * 0.25, height / 2, width * 0.75, width / 2);
+        string.appendTo(svg);
+
+      });
+
+    </script>
+  </body>
+</html>

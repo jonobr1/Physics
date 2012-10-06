@@ -184,7 +184,8 @@ h2 {
   text-transform: capitalize;
 }
 
-canvas {
+canvas,
+svg {
   display: block;
   margin: 0 auto;
   cursor: pointer;
