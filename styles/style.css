@@ -161,6 +161,9 @@ div.live-demo {
     background: rgba(255, 255, 255, 0.75);
     padding: 4px 6px;
     -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    -ms-border-radius: 3px;
+    -o-border-radius: 3px;
     border-radius: 3px;
     opacity: 0.5;
     content: "Play"; }
@@ -198,6 +201,14 @@ svg {
   display: block;
   margin: 0 auto;
   cursor: pointer; }
+  canvas path,
+  svg path {
+    opacity: 0.9; }
+  canvas path:hover,
+  canvas path.fixed,
+  svg path:hover,
+  svg path.fixed {
+    stroke: #ffa000; }
 
 ::selection,
 ::-moz-selection,

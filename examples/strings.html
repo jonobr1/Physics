@@ -13,17 +13,39 @@
       var Strand = function(physics, x1, y1, x2, y2) {
 
         this.physics = physics;
+        this.commands = [];
         this.mass = 0.2;
+        this.threshold = 5;
+        this.fixed = false;
+
+        this.strength = 0.7;
+        this.drag = Physics.DEFAULT_DRAG;
+        this.restLength = 0;
 
         this.a = physics.makeParticle(this.mass, x1, y1);
         this.b = physics.makeParticle(this.mass, x2, y2);
+        this.vibrato = physics.makeParticle(this.mass, 0, 0);
+        this.anchor = physics.makeParticle(this.mass, 0, 0);
+
+        this.a.makeFixed();
+        this.b.makeFixed();
+        this.anchor.makeFixed();
+
+        this.vibrato.position.set(
+          (this.b.position.x - this.a.position.x) / 2 + this.a.position.x,
+          (this.b.position.y - this.a.position.y) / 2 + this.a.position.y
+        );
+        this.anchor.position.copy(this.vibrato.position);
+
+        physics.makeSpring(this.anchor, this.vibrato, this.strength, this.drag, this.restLength);
 
         this.domElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         this.setAttributes({
           'stroke': '#333',
+          'stroke-linecap': 'round',
           'stroke-linejoin': 'round',
           'fill': 'none',
-          'stroke-width': 6
+          'stroke-width': 10
         });
 
         this.update().render();
@@ -35,6 +57,33 @@
         appendTo: function(svg) {
 
           svg.appendChild(this.domElement);
+          return this;
+
+        },
+
+        setAnchor: function(v) {
+
+          this.anchor.position.set(v.x, this.anchor.position.y);
+          this.vibrato.makeFixed();
+          this.affix(v);
+          return this;
+
+        },
+
+        affix: function(v) {
+
+          this.fixed = true;
+          this.vibrato.position.copy(v);
+          this.domElement.setAttribute('class', 'fixed');
+          return this;
+
+        },
+
+        release: function() {
+
+          this.vibrato.fixed = false;
+          this.fixed = false;
+          this.domElement.setAttribute('class', '');
           return this;
 
         },
@@ -52,7 +101,49 @@
 
         update: function() {
 
+          // Calculate cubic bezier curve
+          // http://www.w3.org/TR/SVG/paths.html#PathDataCubicBezierCommands
+
+          var dx = 0, dy = 0, d1 = 0, t1 = 0, d2 = 0, t2 = 0, t3 = 0;
+          var x1 = x2 = this.vibrato.position.x;
+          var y1 = y2 = this.vibrato.position.y;
+
+          if (!this.fixed) {
+
+            // First calculate the angle between a, vibrato and b, vibrato.
+
+            dx = this.a.position.x - this.vibrato.position.x;
+            dy = this.a.position.y - this.vibrato.position.y;
+
+            d1 = Math.sqrt(dx * dx + dy * dy) / 2;
+            t1 = Math.atan2(dy, dx);
+
+            dx = this.b.position.x - this.vibrato.position.x;
+            dy = this.b.position.y - this.vibrato.position.y;
+
+            d2 = Math.sqrt(dx * dx + dy * dy) / 2;
+            t2 = Math.atan2(dy, dx);
+
+            // What's the difference?
+            t3 = t1 + t2;
+            t4 = - Math.PI + t1 + t2;
+
+            // Then project anchors out from vibrato position
+
+            x1 = d1 * Math.cos(t3) + this.vibrato.position.x;
+            y1 = d1 * Math.sin(t3) + this.vibrato.position.y;
+
+            x2 = d2 * Math.cos(t4) + this.vibrato.position.x;
+            y2 = d2 * Math.sin(t4) + this.vibrato.position.y;
+
+          }
+
           // construct commands
+
+          this.commands[0] = 'M ' + this.a.position.x + ' ' + this.a.position.y;
+          this.commands[1] = 'C ' + this.a.position.x + ' ' + this.a.position.y + ' ' + x1 + ' ' + y1 + ' ' + this.vibrato.position.x + ' ' + this.vibrato.position.y;
+          this.commands[2] = 'C ' + x2 + ' ' + y2 + ' ' + this.b.position.x + ' ' + this.b.position.y + ' ' + this.b.position.x + ' ' + this.b.position.y;
+          this.commands[3] = 'L ' + this.b.position.x + ' ' + this.b.position.y;
 
           return this;
 
@@ -61,6 +152,11 @@
         render: function() {
 
           // construct d
+          this.setAttributes({
+            d: this.commands.join(' ')
+          });
+
+          return this;
 
         }
 
@@ -68,15 +164,74 @@
 
       $(function() {
 
-        var svg = $('#splash')[0];
+        var amount = 10;
+        var $svg = $('#splash');
+        var svg = $svg[0];
+        var offset, mouse = new Physics.Vector();
 
         var physics = new Physics();
 
         var width = svg.width.baseVal.value;
         var height = svg.height.baseVal.value;
 
-        var string = new Strand(physics, width * 0.25, height / 2, width * 0.75, width / 2);
-        string.appendTo(svg);
+        var strings = [];
+
+        for (var i = 0; i < amount; i++) {
+
+          var pct = (i + 1) / (amount + 1);
+          var h = pct * height;
+
+          var string = new Strand(physics, width * 0.1, h, width * 0.9, h);
+          string.appendTo(svg);
+          strings.push(string);
+
+        }
+
+        $.each(strings, function(i, string) {
+
+          $(string.domElement)
+            .bind('mousedown', function(e) {
+              string.setAnchor(mouse);
+            });
+
+        });
+
+        $(window)
+          .bind('mousemove', function(e) {
+
+            mouse.x = e.clientX + document.body.scrollLeft - offset.left;
+            mouse.y = e.clientY + document.body.scrollTop - offset.top;
+
+            $.each(strings, function(i, string) {
+              if (string.fixed) {
+                string.affix(mouse);
+              }
+            });
+
+          })
+          .bind('resize', function(e) {
+
+            offset = $svg.offset();
+
+          })
+          .bind('mouseup', function(e) {
+
+            $.each(strings, function(i, string) {
+              if (string.fixed) {
+                string.release();
+              }
+            });
+
+          })
+          .trigger('resize');
+
+          physics.onUpdate(function() {
+
+            $.each(strings, function(i, string) {
+              string.update().render();
+            });
+
+          }).play();
 
       });
 

@@ -189,6 +189,15 @@ svg {
   display: block;
   margin: 0 auto;
   cursor: pointer;
+
+  path {
+    opacity: 0.9;
+  }
+  path:hover,
+  path.fixed {
+    stroke: rgb(255, 160, 0);
+  }
+
 }
 
 ::selection,
