@@ -199,8 +199,8 @@
         $(window)
           .bind('mousemove', function(e) {
 
-            mouse.x = e.clientX + document.body.scrollLeft - offset.left;
-            mouse.y = e.clientY + document.body.scrollTop - offset.top;
+            mouse.x = e.pageX + document.body.scrollLeft - offset.left;
+            mouse.y = e.pageY + document.body.scrollTop - offset.top;
 
             $.each(strings, function(i, string) {
               if (string.fixed) {
