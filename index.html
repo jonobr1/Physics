@@ -172,7 +172,7 @@
             First, we're going to make a new space for physics to take place. This physics will have gravity and we will add a particle to it &mdash; when the particle falls out of viewer's sight we'll place it back where it started:
           </p>
           <div class="live-demo">
-            <canvas id="particle-example" width="578" height="300"></canvas>
+            <canvas id="particle-example" width="578" height="300"><img src="./images/PhysicsParticle.gif" width="578" height="300" alt="Physics.Particle Usage" /></canvas>
           </div>
           <script type="text/javascript" class="live-demo">
 (function() {
@@ -254,7 +254,7 @@
             The previous example showed physics with gravity, a constant force applied to all particles in the simulation. However, this isn't necessary. Now we'll create a physics without gravity and two particles. Instead of gravitational force we'll define a different type of behavior for the particles to exhibit, attraction:
           </p>
           <div class="live-demo">
-            <canvas id="attraction-example" width="578" height="300"></canvas>
+            <canvas id="attraction-example" width="578" height="300"><img src="./images/PhysicsAttraction.gif" width="578" height="300" alt="Physics.Attraction Usage" /></canvas>
           </div>
           <p style="margin-top:20px;">
             Notice the particles continue to be attracted to each other.
@@ -347,7 +347,7 @@
             Another more tactile behavior is known as a spring. Particles connected via a spring aim to always be at a specified rest distance from each other. In this example we'll create a spring with a rest distance <em>smaller</em> than the distance between the two particles. When the particles arrive at a state of rest, we'll reset the simulation by setting the positions of the particles to their original values:
           </p>
           <div class="live-demo">
-            <canvas id="spring-example" width="578" height="300"></canvas>
+            <canvas id="spring-example" width="578" height="300"><img src="./images/PhysicsSpring.gif" width="578" height="300" alt="Physics.Spring Usage" /></canvas>
           </div>
           <script type="text/javascript" class="live-demo">
 (function() {
