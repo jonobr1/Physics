@@ -83,9 +83,8 @@ body {
   color: #333333;
   background: #e2dddb; }
   body.marbles {
-    background: #000;
-    cursor: none; }
-    body.marbles * {
+    background: #000; }
+    body.marbles canvas {
       cursor: none; }
 
 a:link, a:visited {
@@ -209,6 +208,20 @@ svg {
   svg path:hover,
   svg path.fixed {
     stroke: #ffa000; }
+
+#legend {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  border-right: 1px solid white;
+  border-top: 1px solid white;
+  border-left: 1px solid white;
+  padding: 20px 40px;
+  background: #e2dddb;
+  -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.125);
+  -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.125);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.125);
+  margin-left: -162px; }
 
 ::selection,
 ::-moz-selection,

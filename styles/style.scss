@@ -13,11 +13,10 @@ body {
   font-family: 'Open Sans', Lucida, sans-serif;
   text-shadow: 1px 1px rgba(255, 255, 255, 0.75);
   color: $font-color;
-  background: #e2dddb;
+  background: $background;
   &.marbles {
     background: #000;
-    cursor: none;
-    * {
+    canvas {
       cursor: none;
     }
   }
@@ -198,6 +197,19 @@ svg {
     stroke: rgb(255, 160, 0);
   }
 
+}
+
+#legend {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  border-right: 1px solid white;
+  border-top: 1px solid white;
+  border-left: 1px solid white;
+  padding: $line-height $line-height * 2;
+  background: $background;
+  @include box-shadow(0 0 10px rgba(0,0,0,0.125));
+  margin-left: -162px;
 }
 
 ::selection,
