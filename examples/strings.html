@@ -258,8 +258,15 @@
           .bind('mousemove', function(e) {
 
             // update mouse
-            mouse.x = e.clientX + document.body.scrollLeft - offset.left;
-            mouse.y = e.clientY + document.body.scrollTop - offset.top;
+            mouse.x = e.pageX;
+            mouse.y = e.pageY;
+
+            // Make sure mouse is relative to SVG's position,
+            // not applicable for firefox for some reason, buh?
+            if (!$.browser.mozilla) {
+              mouse.x += document.body.scrollLeft - offset.left;
+              mouse.y += document.body.scrollTop - offset.top;
+            }
 
             // IF any string is fixed, set it to the mouse's position.
             $.each(strings, function(i, string) {
