@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
   <head>
+    <meta charset="utf-8" />
     <title>Physics for JavaScript</title>
 
     <meta name="title" content="Physics" />
@@ -45,6 +46,22 @@
               .html($elem.html())
               .appendTo($elem.parent());
 
+          });
+
+          // Whenever we click on a live-demo (canvas or play/pause button)
+          $('body').on('click', 'div.live-demo', function (e) {
+        	  var $currentTarget = $(e.currentTarget),
+        	      $target = $(e.target);
+        	  // If we clicked on the play/pause button, we still need to toggle animation
+        	  if (!$target.is('canvas')) {
+        		$currentTarget.find('canvas').prop('physics').toggle();
+        	  }
+              // Toggle text
+              if ($currentTarget.hasClass('playing')) {
+                $currentTarget.removeClass('playing');
+              } else {
+                $currentTarget.addClass('playing');
+              }
           });
 
           prettyPrint();
@@ -230,23 +247,12 @@
   canvas.onclick = function(e) {
     physics.toggle(); // Toggle between play and paused states.
   };
+  
+  // store our physics object on the canvas so we can access it later
+  canvas.physics = physics;
 
 })();
          </script>
-         <script type="text/javascript">
-
-            // When clicking the canvas toggle pausing and playing the simulation
-            $('#particle-example').parent().click(function() {
-              var $el = $(this);
-              if ($el.hasClass('playing')) {
-                $el.removeClass('playing');
-              } else {
-                $el.addClass('playing');
-              }
-            });
-
-         </script>
-
         </div>
         <h3>Attraction</h3>
         <div class="example">
@@ -316,29 +322,22 @@
 
   };
 
+  // Bind the render function to when physics updates.
   physics.onUpdate(render);
 
+  // Render a posterframe.
   render();
 
+  // Bind canvas click to toggle.
   canvas.onclick = function(e) {
     physics.toggle(); // Toggle between play and paused states.
   };
+  
+  // store our physics object on the canvas so we can access it later
+  canvas.physics = physics;
 
 })();
           </script>
-          <script type="text/javascript">
-
-            // When clicking the canvas toggle pausing and playing the simulation
-            $('#attraction-example').parent().click(function() {
-              var $el = $(this);
-              if ($el.hasClass('playing')) {
-                $el.removeClass('playing');
-              } else {
-                $el.addClass('playing');
-              }
-            });
-
-         </script>
         </div>
 
         <h3>Spring</h3>
@@ -411,28 +410,21 @@
 
   };
 
+  // Bind the render function to when physics updates.
   physics.onUpdate(render);
 
+  // Render a posterframe.
   render();
 
+  // Bind canvas click to toggle.
   canvas.onclick = function(e) {
     physics.toggle(); // Toggle between play and paused states.
   };
+  
+  // store our physics object on the canvas so we can access it later
+  canvas.physics = physics;
 
 })();
-          </script>
-          <script type="text/javascript">
-
-            // When clicking the canvas toggle pausing and playing the simulation
-            $('#spring-example').parent().click(function() {
-              var $el = $(this);
-              if ($el.hasClass('playing')) {
-                $el.removeClass('playing');
-              } else {
-                $el.addClass('playing');
-              }
-            });
-
           </script>
         </div>
 
