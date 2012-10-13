@@ -10,10 +10,12 @@ define([
    */
 
   var ArrayProto = Array.prototype;
-  var hasOwnProperty = Object.prototype.hasOwnProperty;
+  var ObjProto = Object.prototype;
+  var hasOwnProperty = ObjProto.hasOwnProperty;
   var slice = ArrayProto.slice;
   var nativeForEach = ArrayProto.forEach;
   var nativeIndexOf      = ArrayProto.indexOf;
+  var toString = ObjProto.toString;
 
   var has = function(obj, key) {
     return hasOwnProperty.call(obj, key);
