@@ -31,6 +31,7 @@ common = (function () {
    * http://documentcloud.github.com/underscore
    */
 
+  var breaker = {};
   var ArrayProto = Array.prototype;
   var ObjProto = Object.prototype;
   var hasOwnProperty = ObjProto.hasOwnProperty;
