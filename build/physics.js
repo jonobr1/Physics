@@ -284,6 +284,8 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
     this.animations = [];
 
+    this.equilibriumCallbacks = [];
+
     update.call(this);
 
   };
@@ -350,6 +352,18 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
     },
 
+    onEquilibrium: function(func) {
+
+      if (_.indexOf(this.equilibriumCallbacks, func) >= 0 || !_.isFunction(func)) {
+        return this;
+      }
+
+      this.equilibriumCallbacks.push(func);
+
+      return this;
+
+    },
+
     /**
      * Call update after values in the system have changed and this will fire
      * it's own Request Animation Frame to update until things have settled
@@ -390,6 +404,14 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
     }
 
+    if (this.__optimized && this.__equilibrium){
+
+      _.each(this.equilibriumCallbacks, function(a) {
+        a();
+      });
+
+    }
+
   }
 
   return Physics;
@@ -418,6 +440,7 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
    */
   var ParticleSystem = function() {
 
+    this.__equilibriumCriteria = { particles: true, springs: true, attractions: true };
     this.__equilibrium = false; // are we at equilibrium?
     this.__optimized = false;
 
@@ -484,6 +507,15 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
     },
 
     /**
+    * Sets the criteria for equilibrium
+    */
+    setEquilibriumCriteria: function(particles, springs, attractions) {
+      this.__equilibriumCriteria.particles = !!particles;
+      this.__equilibriumCriteria.springs = !!springs;
+      this.__equilibriumCriteria.attractions = !!attractions;
+    },
+
+    /**
      * Update the integrator
      */
     tick: function() {
@@ -499,23 +531,29 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
      * inert / resting and returns a boolean.
      */
     needsUpdate: function() {
+      var i = 0;
 
-      for (var i = 0, l = this.particles.length; i < l; i++) {
-        if (!this.particles[i].resting()) {
-          return true;
+      if(this.__equilibriumCriteria.particles) {
+        for (i = 0, l = this.particles.length; i < l; i++) {
+          if (!this.particles[i].resting()) {
+            return true;
+          }
         }
       }
 
-      for (var i = 0, l = this.springs.length; i < l; i++) {
-        if (!this.springs[i].resting()) {
-          return true;
+      if(this.__equilibriumCriteria.springs) {
+        for (i = 0, l = this.springs.length; i < l; i++) {
+          if (!this.springs[i].resting()) {
+            return true;
+          }
         }
       }
 
-
-      for (var i = 0, l = this.attractions.length; i < l; i++) {
-        if (!this.attractions[i].resting()) {
-          return true;
+      if(this.__equilibriumCriteria.attractions) {
+        for (i = 0, l = this.attractions.length; i < l; i++) {
+          if (!this.attractions[i].resting()) {
+            return true;
+          }
         }
       }
 
