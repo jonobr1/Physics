@@ -29,6 +29,7 @@ define([
    */
   var ParticleSystem = function() {
 
+    this.__equilibriumCriteria = { particles: true, springs: true, attractions: true };
     this.__equilibrium = false; // are we at equilibrium?
     this.__optimized = false;
 
@@ -95,6 +96,15 @@ define([
     },
 
     /**
+    * Sets the criteria for equilibrium
+    */
+    setEquilibriumCriteria: function(particles, springs, attractions) {
+      this.__equilibriumCriteria.particles = !!particles;
+      this.__equilibriumCriteria.springs = !!springs;
+      this.__equilibriumCriteria.attractions = !!attractions;
+    },
+
+    /**
      * Update the integrator
      */
     tick: function() {
@@ -110,23 +120,29 @@ define([
      * inert / resting and returns a boolean.
      */
     needsUpdate: function() {
+      var i = 0;
 
-      for (var i = 0, l = this.particles.length; i < l; i++) {
-        if (!this.particles[i].resting()) {
-          return true;
+      if(this.__equilibriumCriteria.particles) {
+        for (i = 0, l = this.particles.length; i < l; i++) {
+          if (!this.particles[i].resting()) {
+            return true;
+          }
         }
       }
 
-      for (var i = 0, l = this.springs.length; i < l; i++) {
-        if (!this.springs[i].resting()) {
-          return true;
+      if(this.__equilibriumCriteria.springs) {
+        for (i = 0, l = this.springs.length; i < l; i++) {
+          if (!this.springs[i].resting()) {
+            return true;
+          }
         }
       }
 
-
-      for (var i = 0, l = this.attractions.length; i < l; i++) {
-        if (!this.attractions[i].resting()) {
-          return true;
+      if(this.__equilibriumCriteria.attractions) {
+        for (i = 0, l = this.attractions.length; i < l; i++) {
+          if (!this.attractions[i].resting()) {
+            return true;
+          }
         }
       }
 
