@@ -21,6 +21,8 @@ define([
 
     this.animations = [];
 
+    this.equilibriumCallbacks = [];
+
     update.call(this);
 
   };
@@ -87,6 +89,18 @@ define([
 
     },
 
+    onEquilibrium: function(func) {
+
+      if (_.indexOf(this.equilibriumCallbacks, func) >= 0 || !_.isFunction(func)) {
+        return this;
+      }
+
+      this.equilibriumCallbacks.push(func);
+
+      return this;
+
+    },
+
     /**
      * Call update after values in the system have changed and this will fire
      * it's own Request Animation Frame to update until things have settled
@@ -123,6 +137,14 @@ define([
 
       raf(function() {
         update.call(_this);
+      });
+
+    }
+
+    if (this.__optimized && this.__equilibrium){
+
+      _.each(this.equilibriumCallbacks, function(a) {
+        a();
       });
 
     }
