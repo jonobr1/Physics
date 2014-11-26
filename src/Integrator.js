@@ -47,133 +47,175 @@ define([
     step: function(dt) {
 
       var s = this.s;
-      var p, x, y;
+      var p, x, y, i;
+
+      var op, k1v, k2v, k3v, k4v, ov, k1f, k2f, k3f, k4f;
 
       this.allocateParticles();
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
           this.originalPositions[i].copy(p.position);
           this.originalVelocities[i].copy(p.velocity);
         }
+
         p.force.clear();
-      }, this);
+
+      }
 
       // K1
 
       s.applyForces();
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
           this.k1Forces[i].copy(p.force);
           this.k1Velocities[i].copy(p.velocity);
         }
+
         p.force.clear();
-      }, this);
+
+      }
 
       // K2
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
 
-          var op = this.originalPositions[i];
-          var k1v = this.k1Velocities[i];
+          op = this.originalPositions[i];
+          k1v = this.k1Velocities[i];
           x = op.x + k1v.x * 0.5 * dt;
           y = op.y + k1v.y * 0.5 * dt;
           p.position.set(x, y);
 
-          var ov = this.originalVelocities[i];
-          var k1f = this.k1Forces[i];
+          ov = this.originalVelocities[i];
+          k1f = this.k1Forces[i];
           x = ov.x + k1f.x * 0.5 * dt / p.mass;
           y = ov.y + k1f.y * 0.5 * dt / p.mass;
           p.velocity.set(x, y);
 
         }
-      }, this);
+
+      }
 
       s.applyForces();
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
           this.k2Forces[i].copy(p.force);
           this.k2Velocities[i].copy(p.velocity);
         }
+
         p.force.clear();
-      }, this);
+
+      }
 
       // K3
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
 
-          var op = this.originalPositions[i];
-          var k2v = this.k2Velocities[i];
+          op = this.originalPositions[i];
+          k2v = this.k2Velocities[i];
           p.position.set(op.x + k2v.x * 0.5 * dt, op.y + k2v.y * 0.5 * dt);
 
-          var ov = this.originalVelocities[i];
-          var k2f = this.k2Forces[i];
+          ov = this.originalVelocities[i];
+          k2f = this.k2Forces[i];
           p.velocity.set(ov.x + k2f.x * 0.5 * dt / p.mass, ov.y + k2f.y * 0.5 * dt / p.mass);
+
         }
-      }, this);
+
+      }
 
       s.applyForces();
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
           this.k3Forces[i].copy(p.force);
           this.k3Velocities[i].copy(p.velocity);
         }
+
         p.force.clear();
-      }, this);
+
+      }
 
       // K4
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
 
-          var op = this.originalPositions[i];
-          var k3v = this.k3Velocities[i];
-          p.position.set(op.x + k3v.x * dt, op.y + k3v.y * dt)
+          op = this.originalPositions[i];
+          k3v = this.k3Velocities[i];
+          p.position.set(op.x + k3v.x * dt, op.y + k3v.y * dt);
 
-          var ov = this.originalVelocities[i];
-          var k3f = this.k3Forces[i];
+          ov = this.originalVelocities[i];
+          k3f = this.k3Forces[i];
           p.velocity.set(ov.x + k3f.x * dt / p.mass, ov.y + k3f.y * dt / p.mass);
+
         }
-      }, this);
+
+      }
 
       s.applyForces();
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
           this.k4Forces[i].copy(p.force);
           this.k4Velocities[i].copy(p.velocity);
         }
-      }, this);
+
+      }
 
       // TOTAL
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
 
         p.age += dt;
 
         if (!p.fixed) {
 
-          var op = this.originalPositions[i];
-          var k1v = this.k1Velocities[i];
-          var k2v = this.k2Velocities[i];
-          var k3v = this.k3Velocities[i];
-          var k4v = this.k4Velocities[i];
+          op = this.originalPositions[i];
+          k1v = this.k1Velocities[i];
+          k2v = this.k2Velocities[i];
+          k3v = this.k3Velocities[i];
+          k4v = this.k4Velocities[i];
 
-          var x = op.x + dt / 6.0 * (k1v.x + 2.0 * k2v.x + 2.0 * k3v.x + k4v.x);
-          var y = op.y + dt / 6.0 * (k1v.y + 2.0 * k2v.y + 2.0 * k3v.y + k4v.y);
+          x = op.x + dt / 6.0 * (k1v.x + 2.0 * k2v.x + 2.0 * k3v.x + k4v.x);
+          y = op.y + dt / 6.0 * (k1v.y + 2.0 * k2v.y + 2.0 * k3v.y + k4v.y);
 
           p.position.set(x, y);
 
-          var ov = this.originalVelocities[i];
-          var k1f = this.k1Forces[i];
-          var k2f = this.k2Forces[i];
-          var k3f = this.k3Forces[i];
-          var k4f = this.k4Forces[i];
+          ov = this.originalVelocities[i];
+          k1f = this.k1Forces[i];
+          k2f = this.k2Forces[i];
+          k3f = this.k3Forces[i];
+          k4f = this.k4Forces[i];
 
           x = ov.x + dt / (6.0 * p.mass) * (k1f.x + 2.0 * k2f.x + 2.0 * k3f.x + k4f.x);
           y = ov.y + dt / (6.0 * p.mass) * (k1f.y + 2.0 * k2f.y + 2.0 * k3f.y + k4f.y);
@@ -182,7 +224,7 @@ define([
 
         }
 
-      }, this);
+      }
 
       return this;
 
