@@ -267,7 +267,7 @@ Vector = (function (_) {
 
 root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
-  var updates = [];
+  var instances = [];
 
   /**
    * Extended singleton instance of ParticleSystem with convenience methods for
@@ -286,7 +286,7 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
     this.equilibriumCallbacks = [];
 
-    update.call(this);
+    instances.push(this);
 
   };
 
@@ -309,7 +309,6 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
       this.playing = true;
       this.__equilibrium = false;
-      update.call(this);
 
       return this;
 
@@ -371,13 +370,24 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
      */
     update: function() {
 
-      if (!this.__equilibrium) {
+      if (this.__optimized && this.__equilibrium) {
         return this;
       }
 
-      this.__equilibrium = false;
-      if (this.playing) {
-        update.call(this);
+      var i;
+
+      this.tick();
+
+      for (i = 0; i < this.animations.length; i++) {
+        this.animations[i]();
+      }
+
+      if (this.__optimized && this.__equilibrium){
+
+        for (i = 0; i < this.equilibriumCallbacks.length; i++) {
+          this.equilibriumCallbacks[i]();
+        }
+
       }
 
       return this;
@@ -386,33 +396,20 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
   });
 
-  function update() {
+  function loop() {
 
-    var _this = this, i;
+    raf(loop);
 
-    this.tick();
-
-    for (i = 0; i < this.animations.length; i++) {
-      this.animations[i]();
-    }
-
-    if ((this.__optimized && !this.__equilibrium || !this.__optimized) && this.playing) {
-
-      raf(function() {
-        update.call(_this);
-      });
-
-    }
-
-    if (this.__optimized && this.__equilibrium){
-
-      for (i = 0; i < this.equilibriumCallbacks.length; i++) {
-        this.equilibriumCallbacks[i]();
+    for (var i = 0; i < instances.length; i++) {
+      var system = instances[i];
+      if (system.playing) {
+        system.update();
       }
-
     }
 
   }
+
+  loop();
 
   return Physics;
 
