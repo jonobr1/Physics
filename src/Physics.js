@@ -125,13 +125,13 @@ define([
 
   function update() {
 
-    var _this = this;
+    var _this = this, i;
 
     this.tick();
 
-    _.each(this.animations, function(a) {
-      a();
-    });
+    for (i = 0; i < this.animations.length; i++) {
+      this.animations[i]();
+    }
 
     if ((this.__optimized && !this.__equilibrium || !this.__optimized) && this.playing) {
 
@@ -143,9 +143,9 @@ define([
 
     if (this.__optimized && this.__equilibrium){
 
-      _.each(this.equilibriumCallbacks, function(a) {
-        a();
-      });
+      for (i = 0; i < this.equilibriumCallbacks.length; i++) {
+        this.equilibriumCallbacks[i]();
+      }
 
     }
 
