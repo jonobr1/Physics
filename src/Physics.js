@@ -4,7 +4,7 @@ define([
   'common'
 ], function(ParticleSystem, raf, _) {
 
-  var updates = [];
+  var instances = [];
 
   /**
    * Extended singleton instance of ParticleSystem with convenience methods for
@@ -23,7 +23,7 @@ define([
 
     this.equilibriumCallbacks = [];
 
-    update.call(this);
+    instances.push(this);
 
   };
 
@@ -46,7 +46,6 @@ define([
 
       this.playing = true;
       this.__equilibrium = false;
-      update.call(this);
 
       return this;
 
@@ -108,13 +107,24 @@ define([
      */
     update: function() {
 
-      if (!this.__equilibrium) {
+      if (this.__optimized && this.__equilibrium) {
         return this;
       }
 
-      this.__equilibrium = false;
-      if (this.playing) {
-        update.call(this);
+      var i;
+
+      this.tick();
+
+      for (i = 0; i < this.animations.length; i++) {
+        this.animations[i]();
+      }
+
+      if (this.__optimized && this.__equilibrium){
+
+        for (i = 0; i < this.equilibriumCallbacks.length; i++) {
+          this.equilibriumCallbacks[i]();
+        }
+
       }
 
       return this;
@@ -123,33 +133,20 @@ define([
 
   });
 
-  function update() {
+  function loop() {
 
-    var _this = this;
+    raf(loop);
 
-    this.tick();
-
-    _.each(this.animations, function(a) {
-      a();
-    });
-
-    if ((this.__optimized && !this.__equilibrium || !this.__optimized) && this.playing) {
-
-      raf(function() {
-        update.call(_this);
-      });
-
-    }
-
-    if (this.__optimized && this.__equilibrium){
-
-      _.each(this.equilibriumCallbacks, function(a) {
-        a();
-      });
-
+    for (var i = 0; i < instances.length; i++) {
+      var system = instances[i];
+      if (system.playing) {
+        system.update();
+      }
     }
 
   }
+
+  loop();
 
   return Physics;
 

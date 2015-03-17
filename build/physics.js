@@ -267,7 +267,7 @@ Vector = (function (_) {
 
 root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
-  var updates = [];
+  var instances = [];
 
   /**
    * Extended singleton instance of ParticleSystem with convenience methods for
@@ -286,7 +286,7 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
     this.equilibriumCallbacks = [];
 
-    update.call(this);
+    instances.push(this);
 
   };
 
@@ -309,7 +309,6 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
       this.playing = true;
       this.__equilibrium = false;
-      update.call(this);
 
       return this;
 
@@ -371,13 +370,24 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
      */
     update: function() {
 
-      if (!this.__equilibrium) {
+      if (this.__optimized && this.__equilibrium) {
         return this;
       }
 
-      this.__equilibrium = false;
-      if (this.playing) {
-        update.call(this);
+      var i;
+
+      this.tick();
+
+      for (i = 0; i < this.animations.length; i++) {
+        this.animations[i]();
+      }
+
+      if (this.__optimized && this.__equilibrium){
+
+        for (i = 0; i < this.equilibriumCallbacks.length; i++) {
+          this.equilibriumCallbacks[i]();
+        }
+
       }
 
       return this;
@@ -386,33 +396,20 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
 
   });
 
-  function update() {
+  function loop() {
 
-    var _this = this;
+    raf(loop);
 
-    this.tick();
-
-    _.each(this.animations, function(a) {
-      a();
-    });
-
-    if ((this.__optimized && !this.__equilibrium || !this.__optimized) && this.playing) {
-
-      raf(function() {
-        update.call(_this);
-      });
-
-    }
-
-    if (this.__optimized && this.__equilibrium){
-
-      _.each(this.equilibriumCallbacks, function(a) {
-        a();
-      });
-
+    for (var i = 0; i < instances.length; i++) {
+      var system = instances[i];
+      if (system.playing) {
+        system.update();
+      }
     }
 
   }
+
+  loop();
 
   return Physics;
 
@@ -531,9 +528,10 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
      * inert / resting and returns a boolean.
      */
     needsUpdate: function() {
+
       var i = 0;
 
-      if(this.__equilibriumCriteria.particles) {
+      if (this.__equilibriumCriteria.particles) {
         for (i = 0, l = this.particles.length; i < l; i++) {
           if (!this.particles[i].resting()) {
             return true;
@@ -541,7 +539,7 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
         }
       }
 
-      if(this.__equilibriumCriteria.springs) {
+      if (this.__equilibriumCriteria.springs) {
         for (i = 0, l = this.springs.length; i < l; i++) {
           if (!this.springs[i].resting()) {
             return true;
@@ -549,7 +547,7 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
         }
       }
 
-      if(this.__equilibriumCriteria.attractions) {
+      if (this.__equilibriumCriteria.attractions) {
         for (i = 0, l = this.attractions.length; i < l; i++) {
           if (!this.attractions[i].resting()) {
             return true;
@@ -612,9 +610,9 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
      */
     makeSpring: function(a, b, k, d, l) {
 
-      var s = new Spring(a, b, k, d, l);
-      this.addSpring(s);
-      return s;
+      var spring = new Spring(a, b, k, d, l);
+      this.addSpring(spring);
+      return spring;
 
     },
 
@@ -623,9 +621,9 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
      */
     makeAttraction: function(a, b, k, d) {
 
-      var a = new Attraction(a, b, k, d);
-      this.addAttraction(a);
-      return a;
+      var attraction = new Attraction(a, b, k, d);
+      this.addAttraction(attraction);
+      return attraction;
 
     },
 
@@ -645,30 +643,37 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
      */
     applyForces: function() {
 
+      var i, p;
+
       if (!this.gravity.isZero()) {
-        _.each(this.particles, function(p) {
-          p.force.addSelf(this.gravity);
-        }, this);
+
+        for (i = 0; i < this.particles.length; i++) {
+          this.particles[i].force.addSelf(this.gravity);
+        }
+
       }
 
       var t = new Vector();
 
-      _.each(this.particles, function(p) {
+      for (i = 0; i < this.particles.length; i++) {
+
+        p = this.particles[i];
         t.set(p.velocity.x * -1 * this.drag, p.velocity.y * -1 * this.drag);
         p.force.addSelf(t);
-      }, this);
 
-      _.each(this.springs, function(s) {
-        s.update();
-      });
+      }
 
-      _.each(this.attractions, function(a) {
-        a.update();
-      });
+      for (i = 0; i < this.springs.length; i++) {
+        this.springs[i].update();
+      }
 
-      _.each(this.forces, function(f) {
-        f.update();
-      });
+      for (i = 0; i < this.attractions.length; i++) {
+        this.attractions[i].update();
+      }
+
+      for (i = 0; i < this.forces.length; i++) {
+        this.forces[i].update();
+      }
 
       return this;
 
@@ -678,9 +683,9 @@ root.Physics = Physics = (function (ParticleSystem, raf, _) {
      * Clear all particles in the system.
      */
     clearForces: function() {
-      _.each(this.particles, function(p) {
-        p.clear();
-      });
+      for (var i = 0; i < this.particles.length; i++) {
+        this.particles[i].clear();
+      }
       return this;
     }
 
@@ -955,133 +960,175 @@ Integrator = (function (Vector, _) {
     step: function(dt) {
 
       var s = this.s;
-      var p, x, y;
+      var p, x, y, i;
+
+      var op, k1v, k2v, k3v, k4v, ov, k1f, k2f, k3f, k4f;
 
       this.allocateParticles();
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
           this.originalPositions[i].copy(p.position);
           this.originalVelocities[i].copy(p.velocity);
         }
+
         p.force.clear();
-      }, this);
+
+      }
 
       // K1
 
       s.applyForces();
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
           this.k1Forces[i].copy(p.force);
           this.k1Velocities[i].copy(p.velocity);
         }
+
         p.force.clear();
-      }, this);
+
+      }
 
       // K2
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
 
-          var op = this.originalPositions[i];
-          var k1v = this.k1Velocities[i];
+          op = this.originalPositions[i];
+          k1v = this.k1Velocities[i];
           x = op.x + k1v.x * 0.5 * dt;
           y = op.y + k1v.y * 0.5 * dt;
           p.position.set(x, y);
 
-          var ov = this.originalVelocities[i];
-          var k1f = this.k1Forces[i];
+          ov = this.originalVelocities[i];
+          k1f = this.k1Forces[i];
           x = ov.x + k1f.x * 0.5 * dt / p.mass;
           y = ov.y + k1f.y * 0.5 * dt / p.mass;
           p.velocity.set(x, y);
 
         }
-      }, this);
+
+      }
 
       s.applyForces();
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
           this.k2Forces[i].copy(p.force);
           this.k2Velocities[i].copy(p.velocity);
         }
+
         p.force.clear();
-      }, this);
+
+      }
 
       // K3
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
 
-          var op = this.originalPositions[i];
-          var k2v = this.k2Velocities[i];
+          op = this.originalPositions[i];
+          k2v = this.k2Velocities[i];
           p.position.set(op.x + k2v.x * 0.5 * dt, op.y + k2v.y * 0.5 * dt);
 
-          var ov = this.originalVelocities[i];
-          var k2f = this.k2Forces[i];
+          ov = this.originalVelocities[i];
+          k2f = this.k2Forces[i];
           p.velocity.set(ov.x + k2f.x * 0.5 * dt / p.mass, ov.y + k2f.y * 0.5 * dt / p.mass);
+
         }
-      }, this);
+
+      }
 
       s.applyForces();
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
           this.k3Forces[i].copy(p.force);
           this.k3Velocities[i].copy(p.velocity);
         }
+
         p.force.clear();
-      }, this);
+
+      }
 
       // K4
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
 
-          var op = this.originalPositions[i];
-          var k3v = this.k3Velocities[i];
-          p.position.set(op.x + k3v.x * dt, op.y + k3v.y * dt)
+          op = this.originalPositions[i];
+          k3v = this.k3Velocities[i];
+          p.position.set(op.x + k3v.x * dt, op.y + k3v.y * dt);
 
-          var ov = this.originalVelocities[i];
-          var k3f = this.k3Forces[i];
+          ov = this.originalVelocities[i];
+          k3f = this.k3Forces[i];
           p.velocity.set(ov.x + k3f.x * dt / p.mass, ov.y + k3f.y * dt / p.mass);
+
         }
-      }, this);
+
+      }
 
       s.applyForces();
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
+
         if (!p.fixed) {
           this.k4Forces[i].copy(p.force);
           this.k4Velocities[i].copy(p.velocity);
         }
-      }, this);
+
+      }
 
       // TOTAL
 
-      _.each(s.particles, function(p, i) {
+      for (i = 0; i < s.particles.length; i++) {
+
+        p = s.particles[i];
 
         p.age += dt;
 
         if (!p.fixed) {
 
-          var op = this.originalPositions[i];
-          var k1v = this.k1Velocities[i];
-          var k2v = this.k2Velocities[i];
-          var k3v = this.k3Velocities[i];
-          var k4v = this.k4Velocities[i];
+          op = this.originalPositions[i];
+          k1v = this.k1Velocities[i];
+          k2v = this.k2Velocities[i];
+          k3v = this.k3Velocities[i];
+          k4v = this.k4Velocities[i];
 
-          var x = op.x + dt / 6.0 * (k1v.x + 2.0 * k2v.x + 2.0 * k3v.x + k4v.x);
-          var y = op.y + dt / 6.0 * (k1v.y + 2.0 * k2v.y + 2.0 * k3v.y + k4v.y);
+          x = op.x + dt / 6.0 * (k1v.x + 2.0 * k2v.x + 2.0 * k3v.x + k4v.x);
+          y = op.y + dt / 6.0 * (k1v.y + 2.0 * k2v.y + 2.0 * k3v.y + k4v.y);
 
           p.position.set(x, y);
 
-          var ov = this.originalVelocities[i];
-          var k1f = this.k1Forces[i];
-          var k2f = this.k2Forces[i];
-          var k3f = this.k3Forces[i];
-          var k4f = this.k4Forces[i];
+          ov = this.originalVelocities[i];
+          k1f = this.k1Forces[i];
+          k2f = this.k2Forces[i];
+          k3f = this.k3Forces[i];
+          k4f = this.k4Forces[i];
 
           x = ov.x + dt / (6.0 * p.mass) * (k1f.x + 2.0 * k2f.x + 2.0 * k3f.x + k4f.x);
           y = ov.y + dt / (6.0 * p.mass) * (k1f.y + 2.0 * k2f.y + 2.0 * k3f.y + k4f.y);
@@ -1090,7 +1137,7 @@ Integrator = (function (Vector, _) {
 
         }
 
-      }, this);
+      }
 
       return this;
 

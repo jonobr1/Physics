@@ -120,9 +120,10 @@ define([
      * inert / resting and returns a boolean.
      */
     needsUpdate: function() {
+
       var i = 0;
 
-      if(this.__equilibriumCriteria.particles) {
+      if (this.__equilibriumCriteria.particles) {
         for (i = 0, l = this.particles.length; i < l; i++) {
           if (!this.particles[i].resting()) {
             return true;
@@ -130,7 +131,7 @@ define([
         }
       }
 
-      if(this.__equilibriumCriteria.springs) {
+      if (this.__equilibriumCriteria.springs) {
         for (i = 0, l = this.springs.length; i < l; i++) {
           if (!this.springs[i].resting()) {
             return true;
@@ -138,7 +139,7 @@ define([
         }
       }
 
-      if(this.__equilibriumCriteria.attractions) {
+      if (this.__equilibriumCriteria.attractions) {
         for (i = 0, l = this.attractions.length; i < l; i++) {
           if (!this.attractions[i].resting()) {
             return true;
@@ -201,9 +202,9 @@ define([
      */
     makeSpring: function(a, b, k, d, l) {
 
-      var s = new Spring(a, b, k, d, l);
-      this.addSpring(s);
-      return s;
+      var spring = new Spring(a, b, k, d, l);
+      this.addSpring(spring);
+      return spring;
 
     },
 
@@ -212,9 +213,9 @@ define([
      */
     makeAttraction: function(a, b, k, d) {
 
-      var a = new Attraction(a, b, k, d);
-      this.addAttraction(a);
-      return a;
+      var attraction = new Attraction(a, b, k, d);
+      this.addAttraction(attraction);
+      return attraction;
 
     },
 
@@ -234,30 +235,37 @@ define([
      */
     applyForces: function() {
 
+      var i, p;
+
       if (!this.gravity.isZero()) {
-        _.each(this.particles, function(p) {
-          p.force.addSelf(this.gravity);
-        }, this);
+
+        for (i = 0; i < this.particles.length; i++) {
+          this.particles[i].force.addSelf(this.gravity);
+        }
+
       }
 
       var t = new Vector();
 
-      _.each(this.particles, function(p) {
+      for (i = 0; i < this.particles.length; i++) {
+
+        p = this.particles[i];
         t.set(p.velocity.x * -1 * this.drag, p.velocity.y * -1 * this.drag);
         p.force.addSelf(t);
-      }, this);
 
-      _.each(this.springs, function(s) {
-        s.update();
-      });
+      }
 
-      _.each(this.attractions, function(a) {
-        a.update();
-      });
+      for (i = 0; i < this.springs.length; i++) {
+        this.springs[i].update();
+      }
 
-      _.each(this.forces, function(f) {
-        f.update();
-      });
+      for (i = 0; i < this.attractions.length; i++) {
+        this.attractions[i].update();
+      }
+
+      for (i = 0; i < this.forces.length; i++) {
+        this.forces[i].update();
+      }
 
       return this;
 
@@ -267,9 +275,9 @@ define([
      * Clear all particles in the system.
      */
     clearForces: function() {
-      _.each(this.particles, function(p) {
-        p.clear();
-      });
+      for (var i = 0; i < this.particles.length; i++) {
+        this.particles[i].clear();
+      }
       return this;
     }
 
